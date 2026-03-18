@@ -1,0 +1,22 @@
+{
+  "name": "trading-skills-catalog",
+  "description": "44 trading analysis skills for Claude Code — macro regime, market breadth, stock screening, earnings analysis, strategy synthesis, A-share analysis, and more. Unified entry via /trading-hub.",
+  "version": "1.0.0",
+  "author": {
+    "name": "zinan92",
+    "email": "zinan92@users.noreply.github.com"
+  },
+  "homepage": "https://zinan92.github.io/trading-skills-catalog/",
+  "repository": "https://github.com/zinan92/trading-skills-catalog",
+  "license": "MIT",
+  "keywords": [
+    "trading",
+    "stock-analysis",
+    "market-analysis",
+    "claude-code",
+    "skills",
+    "canslim",
+    "druckenmiller",
+    "a-shares"
+  ]
+}
