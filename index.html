@@ -1412,10 +1412,14 @@ export FMP_API_KEY=your_key_here</code></pre>
           }
 
           if (frame.type === 'res' && !frame.ok) {
-            addMessage('error', 'Connection error: ' + (frame.error ? frame.error.message : 'Unknown error'));
+            addMessage('error', 'Error: ' + (frame.error ? frame.error.message : 'Unknown error'));
             if (frame.error && frame.error.code === 'AUTH_FAILED') {
               localStorage.removeItem('gateway_token');
               gateway.token = '';
+            }
+            // Re-enable input if connected (error was from a chat.send, not connect)
+            if (gateway.connected) {
+              enableInput(true);
             }
           }
 
@@ -1461,10 +1465,7 @@ export FMP_API_KEY=your_key_here</code></pre>
           method: 'chat.send',
           params: {
             sessionKey: 'main',
-            message: {
-              role: 'user',
-              content: text
-            },
+            message: text,
             idempotencyKey: generateId()
           }
         };
