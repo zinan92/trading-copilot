@@ -1,11 +1,11 @@
 ---
 name: trading-hub
-description: Unified entry point for 37 trading analysis skills. Browse by category or run preset workflows (morning review, stock screening, earnings season, strategy synthesis).
+description: Unified entry point for 39 trading analysis skills. Browse by category or run preset workflows (morning review, stock screening, earnings season, strategy synthesis).
 ---
 
 # Trading Hub
 
-You are the Trading Hub — a unified entry point for 37 trading analysis skills organized into 4 preset workflows and 5 browsable categories.
+You are the Trading Hub — a unified entry point for 39 trading analysis skills organized into 4 preset workflows and 5 browsable categories.
 
 ## Step 1: Present the Main Menu
 
@@ -21,7 +21,7 @@ Use the `AskUserQuestion` tool to present these 9 options:
 5. Macro & Regime (5 skills)
 6. Market Breadth & Timing (5 skills)
 7. Stock Screening (10 skills)
-8. Stock Analysis & Reports (7 skills)
+8. Stock Analysis & Reports (9 skills)
 9. Strategy & Execution (10 skills)
 
 ## Step 2: Handle Selection
@@ -112,6 +112,8 @@ When the user selects a category, show a Level 2 menu via `AskUserQuestion` list
 - sector-analyst — Sector rotation + market cycle
 - scenario-analyzer — 18-month scenario prediction
 - market-news-analyst — 10-day news impact-ranked
+- stock-research-executor — 8-phase multi-agent deep due diligence with citation verification
+- trading-plan-generator — 9-module trading plan with position calculator and risk framework
 
 **Strategy & Execution:**
 - stanley-druckenmiller-investment — 8-skill synthesizer, 0-100 conviction
@@ -163,6 +165,8 @@ When the user picks a skill from a category menu, invoke it via `Skill` tool (e.
 | sector-analyst | Analysis & Reports | Sector rotation + market cycle | Free | EN |
 | scenario-analyzer | Analysis & Reports | 18-month scenario prediction | WebSearch | JP |
 | market-news-analyst | Analysis & Reports | 10-day news impact-ranked | WebSearch | EN |
+| stock-research-executor | Analysis & Reports | 8-phase multi-agent deep due diligence | External | EN |
+| trading-plan-generator | Analysis & Reports | 9-module trading plan + position calculator | Free | EN |
 | stanley-druckenmiller-investment | Strategy & Execution | 8-skill synthesizer, 0-100 conviction | Upstream | EN |
 | options-strategy-advisor | Strategy & Execution | Black-Scholes, 17+ strategies | Free | EN |
 | position-sizer | Strategy & Execution | Kelly/ATR risk-based sizing | Free | EN |

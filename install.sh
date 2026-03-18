@@ -20,6 +20,7 @@ REQUIRED_SKILLS=(
   portfolio-manager backtest-expert trade-hypothesis-ideator
   market-environment-analysis btc-bottom-model risk-management
   technical-analyst
+  stock-research-executor trading-plan-generator
 )
 
 # Preflight: check skills directory

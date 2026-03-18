@@ -1,6 +1,6 @@
 # Trading Skills Catalog
 
-37 Claude Code skills for systematic trading analysis — from macro regime detection to stock screening to strategy synthesis.
+39 Claude Code skills for systematic trading analysis — from macro regime detection to stock screening to strategy synthesis.
 
 ## Quick Start
 
@@ -29,10 +29,10 @@ Then in Claude Code:
 | Macro & Regime | 5 | macro-regime-detector, macro-liquidity, us-market-sentiment |
 | Market Breadth & Timing | 5 | market-breadth-analyzer, market-top-detector, ftd-detector |
 | Stock Screening | 10 | canslim-screener, vcp-screener, finviz-screener |
-| Stock Analysis & Reports | 7 | us-stock-analysis, tech-earnings-deepdive, scenario-analyzer |
+| Stock Analysis & Reports | 9 | us-stock-analysis, tech-earnings-deepdive, stock-research-executor |
 | Strategy & Execution | 10 | stanley-druckenmiller-investment, position-sizer, backtest-expert |
 
-**API requirements:** 14 free, 14 FMP, 7 WebSearch, 2 other
+**API requirements:** 15 free, 14 FMP, 7 WebSearch, 3 other
 
 ## Preset Workflows
 
@@ -49,6 +49,14 @@ Browse all skills with descriptions and API requirements: [Trading Skills Catalo
 
 - [tradermonty/claude-trading-skills](https://github.com/tradermonty/claude-trading-skills) — 30+ trading skills
 - [Day1Global Skills](https://github.com/star23/Day1Global-Skills) — tech-earnings-deepdive, us-value-investing
+- [stock-research-executor](https://github.com/liangdabiao/claude-code-stock-deep-research-agent) — 8-phase deep research
+- [trading-plan-generator](https://skills.sh/jamesrochabrun/skills/trading-plan-generator) — 9-module trading plan
+
+## Related Projects
+
+- [AI-Trader](https://github.com/HKUDS/AI-Trader) — Multi-AI model live trading competition (NASDAQ/A-shares/Crypto)
+- [TradingAgents](https://github.com/TauricResearch/TradingAgents) — Multi-agent LLM trading framework (analyst → debate → risk → execution)
+- [daily-stock-analysis](https://github.com/ZhuLinsen/daily_stock_analysis) — GitHub Actions EOD analysis for A/H/US stocks with Telegram push
 
 ## License
 

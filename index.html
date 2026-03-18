@@ -383,19 +383,19 @@
   <header class="hero">
     <div class="container">
       <h1>Trading Skills Catalog</h1>
-      <p>37 Claude Code skills for systematic trading analysis</p>
+      <p>39 Claude Code skills for systematic trading analysis</p>
       <a href="#quick-start" class="btn-primary">Get Started</a>
     </div>
   </header>
 
   <!-- ════════ Stats Bar ════════ -->
   <div class="stats-bar">
-    <span><strong>37</strong> skills</span>
+    <span><strong>39</strong> skills</span>
     <span><strong>5</strong> categories</span>
     <span><strong>14</strong> free</span>
     <span><strong>14</strong> FMP</span>
     <span><strong>7</strong> WebSearch</span>
-    <span><strong>2</strong> other</span>
+    <span><strong>4</strong> other</span>
   </div>
 
   <!-- ════════ Dependency Graph ════════ -->
@@ -770,6 +770,26 @@
           <p class="card-expand-hint">click to expand</p>
         </div>
 
+        <div class="card" data-skill="stock-research-executor">
+          <div class="card-header">
+            <span class="card-name"><a href="https://github.com/liangdabiao/claude-code-stock-deep-research-agent" target="_blank" rel="noopener">stock-research-executor</a></span>
+            <span class="badge badge-other">Other</span>
+          </div>
+          <p class="card-desc">8-phase multi-agent deep due diligence with citation verification</p>
+          <div class="card-triggers"><span class="label">Trigger keywords</span>Deep research, due diligence, citation validation, 8-phase analysis, multi-agent stock research</div>
+          <p class="card-expand-hint">click to expand</p>
+        </div>
+
+        <div class="card" data-skill="trading-plan-generator">
+          <div class="card-header">
+            <span class="card-name"><a href="https://skills.sh/jamesrochabrun/skills/trading-plan-generator" target="_blank" rel="noopener">trading-plan-generator</a></span>
+            <span class="badge badge-free">Free</span>
+          </div>
+          <p class="card-desc">9-module trading plan with position calculator and risk framework</p>
+          <div class="card-triggers"><span class="label">Trigger keywords</span>Trading plan, position calculator, risk management, 1% rule, 2R minimum, drawdown limit</div>
+          <p class="card-expand-hint">click to expand</p>
+        </div>
+
       </div>
     </section>
 
@@ -920,6 +940,41 @@ export FMP_API_KEY=your_key_here</code></pre>
           <h3>Strategy Synthesis</h3>
           <p>run 8 upstream skills &rarr; stanley-druckenmiller-investment</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ Related Projects ════════ -->
+  <section class="related-projects">
+    <div class="container">
+      <h2>Related Projects</h2>
+      <p>External trading tools and frameworks that complement these skills.</p>
+      <div class="card-grid">
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-name"><a href="https://github.com/HKUDS/AI-Trader" target="_blank" rel="noopener">AI-Trader</a></span>
+            <span class="badge badge-other">Platform</span>
+          </div>
+          <p class="card-desc">Multi-AI model live trading competition (NASDAQ 100 / A-shares SSE 50 / Crypto). Submit strategies via PR to compete.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-name"><a href="https://github.com/TauricResearch/TradingAgents" target="_blank" rel="noopener">TradingAgents</a></span>
+            <span class="badge badge-other">Framework</span>
+          </div>
+          <p class="card-desc">Multi-agent LLM framework simulating a trading firm: analysts &rarr; bull/bear debate &rarr; risk control &rarr; portfolio manager. Built on LangGraph.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-name"><a href="https://github.com/ZhuLinsen/daily_stock_analysis" target="_blank" rel="noopener">daily-stock-analysis</a></span>
+            <span class="badge badge-other">Tool</span>
+          </div>
+          <p class="card-desc">GitHub Actions EOD analysis for A/H/US stocks with Telegram push. Zero-cost automated daily decision dashboards with buy/stop/target levels.</p>
+        </div>
+
       </div>
     </div>
   </section>
