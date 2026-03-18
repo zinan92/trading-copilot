@@ -1423,16 +1423,17 @@ export FMP_API_KEY=your_key_here</code></pre>
             }
           }
 
-          if (frame.type === 'event' && frame.event === 'chat') {
-            var payload = frame.payload;
-            if (payload && payload.delta && payload.delta.content) {
+          // Handle streaming via 'agent' events (stream: "assistant", data.delta)
+          if (frame.type === 'event' && frame.event === 'agent') {
+            var p = frame.payload;
+            if (p && p.stream === 'assistant' && p.data && p.data.delta) {
               if (!gateway.currentAssistantMsg) {
                 gateway.currentAssistantMsg = addMessage('assistant', '');
               }
-              gateway.currentAssistantMsg.textContent += payload.delta.content;
+              gateway.currentAssistantMsg.textContent += p.data.delta;
               scrollToBottom();
             }
-            if (payload && (payload.state === 'done' || payload.state === 'error' || payload.state === 'aborted')) {
+            if (p && p.stream === 'lifecycle' && p.data && p.data.phase === 'end') {
               gateway.currentAssistantMsg = null;
               enableInput(true);
             }
