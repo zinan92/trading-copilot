@@ -21,6 +21,8 @@ REQUIRED_SKILLS=(
   market-environment-analysis btc-bottom-model risk-management
   technical-analyst
   stock-research-executor trading-plan-generator
+  ashare-daily-review ashare-concept-tracker ashare-signal-scanner
+  ashare-stock-screener ashare-watchlist-briefing
 )
 
 # Preflight: check skills directory
@@ -74,6 +76,15 @@ if [ -z "${FMP_API_KEY:-}" ]; then
   echo "  export FMP_API_KEY=your_key_here"
 else
   echo "FMP_API_KEY detected."
+fi
+
+# quant-data-pipeline check (informational)
+echo ""
+if curl -s --connect-timeout 2 http://localhost:8000/api/health/unified > /dev/null 2>&1; then
+  echo "quant-data-pipeline detected (localhost:8000)."
+else
+  echo "Note: quant-data-pipeline not running. 5 A-share skills require it."
+  echo "  cd ~/work/trading-co/ashare && python -m uvicorn web.app:create_app --factory --port 8000"
 fi
 
 echo ""
