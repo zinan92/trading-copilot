@@ -4,88 +4,247 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Trading Copilot</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.5/dist/purify.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0F1117; --surface: #1A1D27; --border: #2A2D37;
-      --text: #E5E7EB; --text-dim: #9CA3AF; --accent: #3B82F6;
-      --accent-bg: rgba(59,130,246,0.1); --user-bg: #1E3A5F;
-      --green: #10B981; --red: #EF4444;
-      --system-bg: rgba(245,158,11,0.08); --system-text: #F59E0B;
+      --bg: #F8F9FC;
+      --surface: #FFFFFF;
+      --border: #E2E6EF;
+      --text: #1A1F36;
+      --text-dim: #8492A6;
+      --accent: #2563EB;
+      --accent-light: rgba(37,99,235,0.08);
+      --gold: #D4A853;
+      --gold-light: rgba(212,168,83,0.1);
+      --user-bg: #2563EB;
+      --user-text: #FFFFFF;
+      --assistant-bg: #F1F3F9;
+      --green: #10B981;
+      --red: #EF4444;
+      --radius: 16px;
+      --font: 'DM Sans', -apple-system, system-ui, sans-serif;
+      --mono: 'DM Mono', ui-monospace, monospace;
     }
 
     body {
-      font-family: -apple-system, system-ui, 'Segoe UI', sans-serif;
-      background: var(--bg); color: var(--text);
-      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
+    /* ── Header ── */
     .header {
-      display: flex; align-items: center; padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--border); flex-shrink: 0;
+      display: flex; align-items: center;
+      padding: 0.75rem 1.5rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      z-index: 10;
     }
-    .header h1 {
-      font-size: 1rem; font-weight: 600;
-      background: linear-gradient(135deg, #3B82F6, #10B981);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    .logo {
+      font-weight: 700; font-size: 1rem; color: var(--text);
+      display: flex; align-items: center; gap: 0.5rem;
     }
-    .header-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
-
+    .logo-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(135deg, #2563EB, #1D4ED8);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 0.85rem; font-weight: 700;
+    }
+    .header-right { margin-left: auto; display: flex; gap: 0.5rem; }
     .hdr-btn {
-      padding: 0.3rem 0.7rem; border: 1px solid var(--border); border-radius: 6px;
-      background: transparent; color: var(--text-dim); font-size: 0.75rem; cursor: pointer;
+      padding: 0.35rem 0.75rem; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--surface); color: var(--text-dim); font-size: 0.78rem;
+      cursor: pointer; font-family: var(--font); transition: all 0.15s;
     }
     .hdr-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+    /* ── Main area ── */
+    .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* ── Landing (before first message) ── */
+    .landing {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(37,99,235,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(212,168,83,0.05) 0%, transparent 50%),
+        var(--bg);
+    }
+    .landing.hidden { display: none; }
+
+    .landing h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.6rem;
+      letter-spacing: -0.03em;
+      text-align: center;
+    }
+    .landing h1 span {
+      background: linear-gradient(135deg, #2563EB, #D4A853);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .landing .subtitle {
+      font-size: 1.05rem; color: var(--text-dim);
+      margin-bottom: 2.5rem; text-align: center;
+      max-width: 420px; line-height: 1.6;
+    }
+
+    /* Centered input box */
+    .landing-input {
+      width: 100%; max-width: 640px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.04);
+      padding: 1.2rem;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .landing-input:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 4px 32px rgba(37,99,235,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .landing-input textarea {
+      width: 100%; border: none; outline: none;
+      font-size: 1rem; font-family: var(--font);
+      color: var(--text); background: transparent;
+      resize: none; min-height: 48px; max-height: 120px;
+      line-height: 1.5;
+    }
+    .landing-input textarea::placeholder { color: var(--text-dim); }
+    .landing-input-footer {
+      display: flex; align-items: center;
+      justify-content: flex-end;
+      margin-top: 0.5rem;
+    }
+    .send-btn {
+      width: 36px; height: 36px; border: none; border-radius: 10px;
+      background: var(--accent); color: white; cursor: pointer;
+      font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .send-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+    .send-btn:hover:not(:disabled) { opacity: 0.85; transform: scale(1.05); }
+    .send-btn:active:not(:disabled) { transform: scale(0.95); }
+
+    /* Quick actions */
+    .quick-actions {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1.8rem; max-width: 640px;
+    }
+    .quick-label {
+      width: 100%; text-align: center;
+      font-size: 0.75rem; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 0.2rem;
+    }
+    .quick-btn {
+      padding: 0.5rem 1rem; border: 1px solid var(--border);
+      border-radius: 24px; background: var(--surface);
+      color: var(--text); font-size: 0.82rem; cursor: pointer;
+      font-family: var(--font); transition: all 0.15s;
+    }
+    .quick-btn:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: var(--accent-light);
+      transform: translateY(-1px);
+    }
+
+    /* ── Chat mode (after first message) ── */
+    .chat-view {
+      flex: 1; display: none; flex-direction: column; overflow: hidden;
+    }
+    .chat-view.active { display: flex; }
+
     .messages {
-      flex: 1; overflow-y: auto; padding: 1rem;
-      display: flex; flex-direction: column; gap: 1rem;
+      flex: 1; overflow-y: auto; padding: 1.5rem;
+      display: flex; flex-direction: column; gap: 1.2rem;
+      max-width: 720px; width: 100%; margin: 0 auto;
     }
 
     .msg {
-      max-width: 85%; padding: 0.75rem 1rem; border-radius: 12px;
-      font-size: 0.9rem; line-height: 1.65; word-wrap: break-word; white-space: pre-wrap;
+      max-width: 85%; padding: 0.85rem 1.1rem; border-radius: 14px;
+      font-size: 0.92rem; line-height: 1.7; word-wrap: break-word;
     }
-    .msg.user { align-self: flex-end; background: var(--user-bg); border-bottom-right-radius: 4px; }
+    .msg.user {
+      align-self: flex-end; background: var(--user-bg); color: var(--user-text);
+      border-bottom-right-radius: 4px;
+    }
     .msg.assistant {
-      align-self: flex-start; background: var(--surface); border: 1px solid var(--border);
-      border-bottom-left-radius: 4px; max-width: 92%;
+      align-self: flex-start; background: var(--assistant-bg); color: var(--text);
+      border-bottom-left-radius: 4px; max-width: 90%; position: relative;
+      white-space: normal;
     }
     .msg.system {
-      align-self: center; background: var(--system-bg); color: var(--system-text);
-      font-size: 0.8rem; text-align: center; padding: 0.5rem 1rem; border-radius: 8px;
+      align-self: center; background: var(--gold-light); color: var(--gold);
+      font-size: 0.8rem; text-align: center; padding: 0.4rem 1rem; border-radius: 8px;
     }
-    .msg.welcome {
-      align-self: center; text-align: center; background: transparent;
-      color: var(--text-dim); font-size: 0.85rem; padding: 2rem 1rem; max-width: 420px;
+    .msg.thinking {
+      align-self: flex-start; background: var(--assistant-bg); color: var(--text-dim);
+      border-bottom-left-radius: 4px; font-size: 0.88rem;
     }
     .msg.assistant.streaming::after {
       content: '\u2588'; animation: blink 0.8s infinite; color: var(--accent);
     }
     @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
+    .thinking-dots::after { content: ''; animation: dots 1.4s infinite; }
+    @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
 
-    /* Thinking indicator */
-    .msg.thinking {
-      align-self: flex-start; background: var(--surface); border: 1px solid var(--border);
-      border-bottom-left-radius: 4px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-dim);
+    /* Markdown in assistant */
+    .msg.assistant h1, .msg.assistant h2, .msg.assistant h3 {
+      margin: 0.8rem 0 0.4rem; color: var(--text);
     }
-    .thinking-dots::after {
-      content: ''; animation: dots 1.4s infinite;
+    .msg.assistant h1 { font-size: 1.1rem; }
+    .msg.assistant h2 { font-size: 1rem; }
+    .msg.assistant h3 { font-size: 0.95rem; color: var(--accent); }
+    .msg.assistant p { margin: 0.3rem 0; }
+    .msg.assistant ul, .msg.assistant ol { margin: 0.3rem 0 0.3rem 1.2rem; }
+    .msg.assistant li { margin: 0.15rem 0; }
+    .msg.assistant strong { color: var(--text); font-weight: 600; }
+    .msg.assistant code {
+      background: rgba(0,0,0,0.04); padding: 0.1rem 0.35rem;
+      border-radius: 4px; font-size: 0.82rem; font-family: var(--mono);
     }
-    @keyframes dots {
-      0% { content: '.'; } 33% { content: '..'; } 66% { content: '...'; }
+    .msg.assistant pre {
+      background: #1A1F36; color: #E5E7EB; border-radius: 10px;
+      padding: 0.8rem; overflow-x: auto; margin: 0.5rem 0;
     }
+    .msg.assistant pre code { background: none; padding: 0; color: inherit; }
+    .msg.assistant table {
+      width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.82rem;
+    }
+    .msg.assistant th {
+      text-align: left; padding: 0.45rem 0.6rem;
+      border-bottom: 2px solid var(--border); font-weight: 600; color: var(--text-dim);
+    }
+    .msg.assistant td {
+      padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border);
+    }
+    .msg.assistant tr:hover td { background: rgba(37,99,235,0.02); }
+    .msg.assistant hr { border: none; border-top: 1px solid var(--border); margin: 0.8rem 0; }
+    .msg.assistant blockquote {
+      border-left: 3px solid var(--accent); padding-left: 0.8rem;
+      color: var(--text-dim); margin: 0.4rem 0;
+    }
+    .msg.assistant a { color: var(--accent); }
 
     /* Copy button */
-    .msg.assistant { position: relative; }
     .copy-btn {
       position: absolute; top: 0.4rem; right: 0.4rem;
-      padding: 0.2rem 0.5rem; border: 1px solid var(--border); border-radius: 4px;
-      background: var(--bg); color: var(--text-dim); font-size: 0.7rem;
-      cursor: pointer; opacity: 0; transition: opacity 0.15s;
+      padding: 0.2rem 0.5rem; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--surface); color: var(--text-dim); font-size: 0.7rem;
+      cursor: pointer; opacity: 0; transition: opacity 0.15s; font-family: var(--font);
     }
     .msg.assistant:hover .copy-btn { opacity: 1; }
     .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
@@ -94,147 +253,113 @@
     /* Timestamp */
     .msg-time {
       font-size: 0.65rem; color: var(--text-dim); opacity: 0.5;
-      margin-top: 0.3rem; text-align: right;
+      margin-top: 0.3rem;
     }
-    .msg.assistant .msg-time { text-align: left; }
+    .msg.user .msg-time { text-align: right; }
 
-    /* Markdown rendered content */
-    .msg.assistant { white-space: normal; }
-    .msg.assistant h1, .msg.assistant h2, .msg.assistant h3 {
-      margin: 0.8rem 0 0.4rem; font-size: 1rem; color: var(--text);
+    /* Chat input bar */
+    .chat-input-bar {
+      border-top: 1px solid var(--border); background: var(--surface);
+      padding: 0.75rem; flex-shrink: 0;
     }
-    .msg.assistant h1 { font-size: 1.1rem; }
-    .msg.assistant h2 { font-size: 1rem; }
-    .msg.assistant h3 { font-size: 0.95rem; color: var(--accent); }
-    .msg.assistant p { margin: 0.3rem 0; line-height: 1.65; }
-    .msg.assistant ul, .msg.assistant ol { margin: 0.3rem 0 0.3rem 1.2rem; }
-    .msg.assistant li { margin: 0.15rem 0; }
-    .msg.assistant strong { color: #F9FAFB; }
-    .msg.assistant em { color: var(--text-dim); }
-    .msg.assistant code {
-      background: rgba(255,255,255,0.06); padding: 0.1rem 0.35rem;
-      border-radius: 4px; font-size: 0.82rem; font-family: ui-monospace, monospace;
+    .chat-input-inner {
+      max-width: 720px; margin: 0 auto;
+      display: flex; gap: 0.5rem; align-items: flex-end;
     }
-    .msg.assistant pre {
-      background: rgba(0,0,0,0.3); border-radius: 6px; padding: 0.6rem;
-      overflow-x: auto; margin: 0.4rem 0;
+    .chat-input-inner textarea {
+      flex: 1; border: 1px solid var(--border); border-radius: 12px;
+      padding: 0.65rem 0.9rem; font-size: 0.92rem; resize: none;
+      font-family: var(--font); outline: none; background: var(--bg);
+      color: var(--text); min-height: 42px; max-height: 120px;
     }
-    .msg.assistant pre code { background: none; padding: 0; }
-    .msg.assistant table {
-      width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.82rem;
-    }
-    .msg.assistant th {
-      text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border);
-      color: var(--text-dim); font-weight: 600;
-    }
-    .msg.assistant td {
-      padding: 0.35rem 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .msg.assistant tr:hover td { background: rgba(255,255,255,0.02); }
-    .msg.assistant hr { border: none; border-top: 1px solid var(--border); margin: 0.8rem 0; }
-    .msg.assistant blockquote {
-      border-left: 3px solid var(--accent); padding-left: 0.8rem;
-      color: var(--text-dim); margin: 0.4rem 0;
-    }
-    .msg.assistant a { color: var(--accent); text-decoration: none; }
-    .msg.assistant a:hover { text-decoration: underline; }
+    .chat-input-inner textarea::placeholder { color: var(--text-dim); }
+    .chat-input-inner textarea:focus { border-color: var(--accent); background: var(--surface); }
 
-    /* Onboarding */
-    .onboarding { max-width: 380px; align-self: center; padding: 1.5rem; }
-    .ob-option {
-      display: block; width: 100%; padding: 0.6rem 0.9rem; margin-bottom: 0.5rem;
-      border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
-      color: var(--text); font-size: 0.85rem; cursor: pointer; text-align: left;
-    }
-    .ob-option:hover { border-color: var(--accent); background: var(--accent-bg); }
-    .ob-input {
-      width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 8px;
-      background: var(--bg); color: var(--text); font-size: 0.85rem; margin-bottom: 0.5rem;
-      outline: none;
-    }
-    .ob-input:focus { border-color: var(--accent); }
-
-    .quick-actions {
-      display: flex; gap: 0.5rem; padding: 0.5rem 1rem; overflow-x: auto;
-      flex-shrink: 0; -webkit-overflow-scrolling: touch;
-    }
-    .quick-actions::-webkit-scrollbar { display: none; }
-    .quick-btn {
-      white-space: nowrap; padding: 0.45rem 0.9rem; border: 1px solid var(--border);
-      border-radius: 20px; background: transparent; color: var(--text-dim);
-      font-size: 0.8rem; cursor: pointer; flex-shrink: 0;
-    }
-    .quick-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
-
-    .input-area {
-      display: flex; gap: 0.5rem; padding: 0.75rem 1rem;
-      border-top: 1px solid var(--border); flex-shrink: 0;
-    }
-    .input-area textarea {
-      flex: 1; border: 1px solid var(--border); border-radius: 10px;
-      padding: 0.6rem 0.9rem; font-size: 0.9rem; resize: none; font-family: inherit;
-      outline: none; background: var(--surface); color: var(--text);
-      min-height: 42px; max-height: 120px;
-    }
-    .input-area textarea::placeholder { color: var(--text-dim); }
-    .input-area textarea:focus { border-color: var(--accent); }
-    .send-btn {
-      width: 42px; height: 42px; border: none; border-radius: 10px;
-      background: var(--accent); color: white; cursor: pointer; font-size: 1.1rem;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-    /* Settings modal */
+    /* ── Settings modal ── */
     .modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3);
       z-index: 100; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
     }
     .modal-overlay.visible { display: flex; }
     .modal {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 400px;
+      border-radius: var(--radius); padding: 1.5rem; width: 90%; max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
     }
-    .modal h3 { margin-bottom: 0.75rem; font-size: 1rem; }
-    .modal label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.3rem; margin-top: 0.75rem; }
+    .modal h3 { margin-bottom: 0.75rem; font-size: 1.05rem; font-weight: 600; }
+    .modal label { display: block; font-size: 0.8rem; color: var(--text-dim); margin: 0.75rem 0 0.3rem; }
     .modal input, .modal select {
       width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 8px;
       background: var(--bg); color: var(--text); font-size: 0.85rem; outline: none;
+      font-family: var(--font);
     }
     .modal input:focus, .modal select:focus { border-color: var(--accent); }
-    .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
-    .modal-actions button { padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer; border: none; }
+    .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.2rem; }
+    .modal-actions button {
+      padding: 0.45rem 1rem; border-radius: 8px; font-size: 0.85rem;
+      cursor: pointer; border: none; font-family: var(--font);
+    }
     .btn-primary { background: var(--accent); color: white; }
-    .btn-secondary { background: transparent; color: var(--text-dim); border: 1px solid var(--border) !important; }
+    .btn-secondary { background: var(--bg); color: var(--text-dim); border: 1px solid var(--border) !important; }
     .btn-danger { background: var(--red); color: white; }
 
-    @media (max-width: 640px) { .msg { max-width: 95%; } .msg.assistant { max-width: 98%; } }
+    @media (max-width: 640px) {
+      .landing h1 { font-size: 1.8rem; }
+      .msg { max-width: 95%; }
+      .msg.assistant { max-width: 98%; }
+      .landing { padding: 1.5rem; }
+      .landing-input { padding: 1rem; }
+    }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <h1>Trading Copilot</h1>
+    <div class="logo">
+      <div class="logo-icon">TC</div>
+      Trading Copilot
+    </div>
     <div class="header-right">
       <button class="hdr-btn" id="settingsBtn">Settings</button>
       <button class="hdr-btn" id="newChatBtn">New Chat</button>
     </div>
   </div>
 
-  <div class="messages" id="messages"></div>
+  <div class="main">
+    <!-- Landing page (centered input) -->
+    <div class="landing" id="landing">
+      <h1>Your <span>Trading Copilot</span></h1>
+      <p class="subtitle">Tell me your trading idea. I'll pick the right analysis method and give you actionable insights.</p>
 
-  <div class="quick-actions">
-    <button class="quick-btn" data-prompt="今天市场有什么重要的事情？帮我做一个快速复盘：大盘表现、热点板块、重要新闻。">📊 今日热点</button>
-    <button class="quick-btn" data-prompt="帮我检查一下我的持仓情况，有没有需要注意的风险信号？">💼 我的持仓</button>
-    <button class="quick-btn" data-prompt="根据当前市场环境，帮我找几只值得关注的股票。先问我偏好什么风格。">🔍 帮我选股</button>
-    <button class="quick-btn" data-prompt="给我一个综合策略建议：当前市场环境怎么样？我应该进攻还是防守？确信度评分是多少？">🎯 策略建议</button>
-    <button class="quick-btn" data-prompt="请做一次完整的 A 股复盘：涨停板分析、板块强弱、轮动信号、热门概念、异常信号。">🇨🇳 A股复盘</button>
-    <button class="quick-btn" data-prompt="本周有哪些重要公司发布财报？帮我标注值得重点关注的。">📅 财报日历</button>
-  </div>
+      <div class="landing-input">
+        <textarea id="landingInput" placeholder="Describe your trading idea..." rows="2"></textarea>
+        <div class="landing-input-footer">
+          <button class="send-btn" id="landingSend" disabled>&#8593;</button>
+        </div>
+      </div>
 
-  <div class="input-area">
-    <textarea id="input" placeholder="输入你的交易想法..." rows="1"></textarea>
-    <button class="send-btn" id="sendBtn" disabled>↑</button>
+      <div class="quick-actions">
+        <div class="quick-label">Try one of these</div>
+        <button class="quick-btn" data-prompt="今天市场有什么重要的事情？帮我做一个快速复盘。">📊 Today's Market</button>
+        <button class="quick-btn" data-prompt="根据当前市场环境，帮我找几只值得关注的股票。先问我偏好什么风格。">🔍 Stock Screener</button>
+        <button class="quick-btn" data-prompt="给我一个综合策略建议：当前市场环境怎么样？确信度评分是多少？">🎯 Strategy</button>
+        <button class="quick-btn" data-prompt="请做一次完整的 A 股复盘：涨停板分析、板块强弱、轮动信号。">🇨🇳 A-Share Review</button>
+        <button class="quick-btn" data-prompt="帮我分析一下 NVDA 值不值得买入">📈 Analyze NVDA</button>
+        <button class="quick-btn" data-prompt="本周有哪些重要公司发布财报？">📅 Earnings</button>
+      </div>
+    </div>
+
+    <!-- Chat view (after first message) -->
+    <div class="chat-view" id="chatView">
+      <div class="messages" id="messages"></div>
+      <div class="chat-input-bar">
+        <div class="chat-input-inner">
+          <textarea id="chatInput" placeholder="Continue the conversation..." rows="1"></textarea>
+          <button class="send-btn" id="chatSend" disabled>&#8593;</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Settings Modal -->
@@ -290,105 +415,164 @@
         profile: JSON.parse(localStorage.getItem('tc_profile') || 'null'),
         history: JSON.parse(localStorage.getItem('tc_history') || '[]'),
         streaming: false,
-        currentMsg: null
+        currentMsg: null,
+        inChat: false
       };
 
+      var landingEl = document.getElementById('landing');
+      var chatViewEl = document.getElementById('chatView');
       var messagesEl = document.getElementById('messages');
-      var inputEl = document.getElementById('input');
-      var sendBtn = document.getElementById('sendBtn');
+      var landingInput = document.getElementById('landingInput');
+      var landingSend = document.getElementById('landingSend');
+      var chatInput = document.getElementById('chatInput');
+      var chatSend = document.getElementById('chatSend');
 
-      // Init
+      // If profile not set, show quick onboarding via settings
       if (!state.profile) {
-        showOnboarding();
-      } else {
-        showWelcome();
-        restoreHistory();
+        state.profile = { name: 'Trader', style: '', markets: 'both', risk: 'moderate' };
+        localStorage.setItem('tc_profile', JSON.stringify(state.profile));
       }
 
-      // Onboarding
-      function showOnboarding() {
-        var div = document.createElement('div');
-        div.className = 'onboarding';
-
-        var title = document.createElement('h3');
-        title.textContent = 'Welcome! Tell me about yourself.';
-        title.style.cssText = 'font-size:0.95rem;margin-bottom:0.75rem';
-        div.appendChild(title);
-
-        var nameInput = document.createElement('input');
-        nameInput.className = 'ob-input';
-        nameInput.placeholder = 'Your name';
-        nameInput.id = 'obName';
-        div.appendChild(nameInput);
-
-        var hint = document.createElement('p');
-        hint.textContent = 'Trading style:';
-        hint.style.cssText = 'font-size:0.8rem;color:var(--text-dim);margin:0.5rem 0';
-        div.appendChild(hint);
-
-        var styles = [
-          ['growth', 'Growth / 成长股'],
-          ['value', 'Value / 价值投资'],
-          ['momentum', 'Momentum / 动量'],
-          ['swing', 'Swing / 波段'],
-          ['macro', 'Macro / 宏观']
-        ];
-
-        styles.forEach(function(s) {
-          var btn = document.createElement('button');
-          btn.className = 'ob-option';
-          btn.textContent = s[1];
-          btn.setAttribute('data-style', s[0]);
-          btn.addEventListener('click', function() {
-            var name = document.getElementById('obName').value.trim() || 'Trader';
-            state.profile = { name: name, style: s[0], markets: 'both', risk: 'moderate' };
-            localStorage.setItem('tc_profile', JSON.stringify(state.profile));
-            div.remove();
-            showWelcome();
-            addMsg('system', 'Profile saved! Analysis will be tailored to your style.');
-          });
-          div.appendChild(btn);
-        });
-
-        messagesEl.appendChild(div);
-      }
-
-      function showWelcome() {
-        var name = state.profile ? state.profile.name : 'Trader';
-        var div = document.createElement('div');
-        div.className = 'msg welcome';
-
-        var h2 = document.createElement('h2');
-        h2.textContent = 'Hey ' + name + ' \uD83D\uDC4B';
-        h2.style.cssText = 'font-size:1.3rem;color:var(--text);margin-bottom:0.5rem';
-        div.appendChild(h2);
-
-        var p1 = document.createElement('p');
-        p1.textContent = '告诉我你的交易想法，或者点击下面的快捷按钮开始。';
-        p1.style.marginBottom = '1rem';
-        div.appendChild(p1);
-
-        var p2 = document.createElement('p');
-        p2.textContent = '市场研判 \u00B7 选股筛选 \u00B7 个股分析 \u00B7 财报解读 \u00B7 仓位计算 \u00B7 A股复盘';
-        p2.style.cssText = 'font-size:0.75rem;color:var(--text-dim)';
-        div.appendChild(p2);
-
-        messagesEl.appendChild(div);
-      }
-
-      function restoreHistory() {
+      // Restore chat if history exists
+      if (state.history.length > 0) {
+        enterChatMode();
         state.history.forEach(function(m) {
           var el = addMsg(m.role, m.content);
           if (m.role === 'assistant') renderMarkdown(el, m.content);
         });
       }
 
+      // ── Input handlers ──
+      function setupInput(input, btn) {
+        input.addEventListener('input', function() {
+          btn.disabled = !input.value.trim() || state.streaming;
+          input.style.height = 'auto';
+          input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+        });
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!btn.disabled) doSend(input);
+          }
+        });
+        btn.addEventListener('click', function() { doSend(input); });
+      }
+      setupInput(landingInput, landingSend);
+      setupInput(chatInput, chatSend);
+
+      // Quick action buttons
+      document.querySelectorAll('.quick-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          landingInput.value = btn.getAttribute('data-prompt');
+          doSend(landingInput);
+        });
+      });
+
+      function enterChatMode() {
+        state.inChat = true;
+        landingEl.classList.add('hidden');
+        chatViewEl.classList.add('active');
+      }
+
+      function doSend(inputEl) {
+        var text = inputEl.value.trim();
+        if (!text || state.streaming) return;
+
+        if (!state.inChat) enterChatMode();
+
+        addMsg('user', text);
+        state.history.push({ role: 'user', content: text });
+        saveHistory();
+        inputEl.value = '';
+        inputEl.style.height = 'auto';
+        landingSend.disabled = true;
+        chatSend.disabled = true;
+        state.streaming = true;
+
+        addThinking();
+        chatInput.focus();
+
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            history: state.history.slice(0, -1),
+            provider: state.provider,
+            api_key: state.provider === 'anthropic' ? state.apiKey : '',
+            user_profile: buildUserProfile()
+          })
+        }).then(function(response) {
+          if (!response.ok) throw new Error('API error: ' + response.status);
+          var reader = response.body.getReader();
+          var decoder = new TextDecoder();
+          var buffer = '';
+          var fullText = '';
+          var renderTimer = null;
+
+          function scheduleRender() {
+            if (renderTimer) return;
+            renderTimer = setTimeout(function() {
+              renderTimer = null;
+              if (state.currentMsg && fullText) {
+                renderMarkdown(state.currentMsg, fullText);
+                autoScroll();
+              }
+            }, 300);
+          }
+
+          function read() {
+            reader.read().then(function(result) {
+              if (result.done) { if (renderTimer) { clearTimeout(renderTimer); } finish(fullText); return; }
+              buffer += decoder.decode(result.value, { stream: true });
+              var lines = buffer.split('\n');
+              buffer = lines.pop();
+              lines.forEach(function(line) {
+                if (!line.startsWith('data: ')) return;
+                try {
+                  var data = JSON.parse(line.slice(6));
+                  if (data.type === 'text') {
+                    if (!state.currentMsg) {
+                      removeThinking();
+                      state.currentMsg = addMsg('assistant', '');
+                      state.currentMsg.classList.add('streaming');
+                    }
+                    fullText += data.text;
+                    scheduleRender();
+                  } else if (data.type === 'done') {
+                    if (renderTimer) { clearTimeout(renderTimer); }
+                    finish(fullText);
+                  } else if (data.type === 'error') {
+                    removeThinking();
+                    if (!state.currentMsg) state.currentMsg = addMsg('assistant', '');
+                    state.currentMsg.textContent = parseError(data.error);
+                    finish('');
+                  }
+                } catch(e) {}
+              });
+              read();
+            }).catch(function(err) {
+              removeThinking();
+              if (!state.currentMsg) state.currentMsg = addMsg('assistant', '');
+              state.currentMsg.textContent = parseError(err.message);
+              finish('');
+            });
+          }
+          read();
+        }).catch(function(err) {
+          removeThinking();
+          if (!state.currentMsg) state.currentMsg = addMsg('assistant', '');
+          state.currentMsg.textContent = parseError(err.message);
+          finish('');
+        });
+      }
+
+      // ── Message helpers ──
       function addMsg(role, text) {
         var div = document.createElement('div');
         div.className = 'msg ' + role;
         div.textContent = text;
 
-        // Timestamp
         if (role === 'user' || role === 'assistant') {
           var time = document.createElement('div');
           time.className = 'msg-time';
@@ -397,15 +581,13 @@
           div.appendChild(time);
         }
 
-        // Copy button for assistant messages
         if (role === 'assistant') {
           var copyBtn = document.createElement('button');
           copyBtn.className = 'copy-btn';
           copyBtn.textContent = 'Copy';
           copyBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            var content = div.textContent.replace(/^Copy/, '').replace(/\d{2}:\d{2}$/, '').trim();
-            navigator.clipboard.writeText(content).then(function() {
+            navigator.clipboard.writeText(div.innerText.replace(/^Copy/, '').trim()).then(function() {
               copyBtn.textContent = 'Copied!';
               copyBtn.classList.add('copied');
               setTimeout(function() { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1500);
@@ -425,11 +607,10 @@
         div.id = 'thinkingIndicator';
         var span = document.createElement('span');
         span.className = 'thinking-dots';
-        span.textContent = '\u2728 \u601D\u8003\u4E2D';
+        span.textContent = '\u2728 Analyzing';
         div.appendChild(span);
         messagesEl.appendChild(div);
         messagesEl.scrollTop = messagesEl.scrollHeight;
-        return div;
       }
 
       function removeThinking() {
@@ -437,109 +618,21 @@
         if (el) el.remove();
       }
 
-      function buildUserProfile() {
-        if (!state.profile) return '';
-        var p = state.profile;
-        return ['Name: ' + (p.name || ''), 'Style: ' + (p.style || ''), 'Markets: ' + (p.markets || ''), 'Risk: ' + (p.risk || '')].join('\n');
-      }
-
-      function sendMessage() {
-        var text = inputEl.value.trim();
-        if (!text || state.streaming) return;
-
-        addMsg('user', text);
-        state.history.push({ role: 'user', content: text });
-        saveHistory();
-        inputEl.value = '';
-        inputEl.style.height = 'auto';
-        sendBtn.disabled = true;
-        state.streaming = true;
-
-        addThinking();
-
-        fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: text,
-            history: state.history.slice(0, -1),
-            provider: state.provider,
-            api_key: state.provider === 'anthropic' ? state.apiKey : '',
-            user_profile: buildUserProfile()
-          })
-        }).then(function(response) {
-          if (!response.ok) throw new Error('API error: ' + response.status);
-          var reader = response.body.getReader();
-          var decoder = new TextDecoder();
-          var buffer = '';
-          var fullText = '';
-
-          var renderTimer = null;
-
-          function scheduleRender() {
-            // Throttle markdown re-renders to every 300ms during streaming
-            if (renderTimer) return;
-            renderTimer = setTimeout(function() {
-              renderTimer = null;
-              if (state.currentMsg && fullText) {
-                renderMarkdown(state.currentMsg, fullText);
-                autoScroll();
-              }
-            }, 300);
-          }
-
-          function read() {
-            reader.read().then(function(result) {
-              if (result.done) { if (renderTimer) { clearTimeout(renderTimer); renderTimer = null; } finish(fullText); return; }
-              buffer += decoder.decode(result.value, { stream: true });
-              var lines = buffer.split('\n');
-              buffer = lines.pop();
-              lines.forEach(function(line) {
-                if (!line.startsWith('data: ')) return;
-                try {
-                  var data = JSON.parse(line.slice(6));
-                  if (data.type === 'text') {
-                    if (!state.currentMsg) {
-                      removeThinking();
-                      state.currentMsg = addMsg('assistant', '');
-                      state.currentMsg.classList.add('streaming');
-                    }
-                    fullText += data.text;
-                    scheduleRender();
-                  } else if (data.type === 'done') {
-                    if (renderTimer) { clearTimeout(renderTimer); renderTimer = null; }
-                    finish(fullText);
-                  } else if (data.type === 'error') {
-                    removeThinking();
-                    if (!state.currentMsg) state.currentMsg = addMsg('assistant', '');
-                    state.currentMsg.textContent = parseError(data.error);
-                    finish('');
-                  }
-                } catch(e) {}
-              });
-              read();
-            }).catch(function(err) { removeThinking(); if (!state.currentMsg) state.currentMsg = addMsg('assistant',''); state.currentMsg.textContent = parseError(err.message); finish(''); });
-          }
-          read();
-        }).catch(function(err) { removeThinking(); if (!state.currentMsg) state.currentMsg = addMsg('assistant',''); state.currentMsg.textContent = parseError(err.message); finish(''); });
-      }
-
       function autoScroll() {
-        // Only auto-scroll if user is near the bottom (within 150px)
-        var isNearBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 150;
-        if (isNearBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
+        var near = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 150;
+        if (near) messagesEl.scrollTop = messagesEl.scrollHeight;
       }
 
       function parseError(raw) {
         try {
           var obj = JSON.parse(raw);
           var msg = obj.error && obj.error.message ? obj.error.message : raw;
-          if (msg.indexOf('insufficient_balance') >= 0 || msg.indexOf('insufficient balance') >= 0) return 'API 余额不足，请充值或在 Settings 中切换到自己的 API Key。';
-          if (msg.indexOf('invalid api key') >= 0 || msg.indexOf('authorized_error') >= 0) return 'API Key 无效，请在 Settings 中检查。';
-          if (msg.indexOf('rate_limit') >= 0) return '请求太频繁，请稍后再试。';
+          if (msg.indexOf('insufficient balance') >= 0) return 'API balance depleted. Go to Settings to switch provider.';
+          if (msg.indexOf('invalid api key') >= 0) return 'Invalid API key. Check Settings.';
+          if (msg.indexOf('rate_limit') >= 0) return 'Rate limited. Please wait a moment.';
           return msg;
         } catch(e) {
-          if (raw.indexOf('Failed to fetch') >= 0) return '无法连接服务器，请确认 server.py 正在运行。';
+          if (raw.indexOf('Failed to fetch') >= 0) return 'Cannot reach server. Is server.py running?';
           return raw;
         }
       }
@@ -555,47 +648,38 @@
       function finish(fullText) {
         if (state.currentMsg) {
           state.currentMsg.classList.remove('streaming');
-          if (fullText) {
-            renderMarkdown(state.currentMsg, fullText);
-            autoScroll();
-          }
+          if (fullText) { renderMarkdown(state.currentMsg, fullText); autoScroll(); }
         }
         if (fullText) { state.history.push({ role: 'assistant', content: fullText }); saveHistory(); }
         state.currentMsg = null;
         state.streaming = false;
-        sendBtn.disabled = !inputEl.value.trim();
-        inputEl.focus();
+        chatSend.disabled = !chatInput.value.trim();
+        landingSend.disabled = !landingInput.value.trim();
+        chatInput.focus();
+      }
+
+      function buildUserProfile() {
+        if (!state.profile) return '';
+        var p = state.profile;
+        return ['Name: ' + (p.name||''), 'Style: ' + (p.style||''), 'Markets: ' + (p.markets||''), 'Risk: ' + (p.risk||'')].join('\n');
       }
 
       function saveHistory() {
         localStorage.setItem('tc_history', JSON.stringify(state.history.slice(-20)));
       }
 
-      // Input
-      inputEl.addEventListener('input', function() {
-        sendBtn.disabled = !inputEl.value.trim() || state.streaming;
-        inputEl.style.height = 'auto';
-        inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
-      });
-      inputEl.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); }
-      });
-      sendBtn.addEventListener('click', sendMessage);
-
-      // Quick actions
-      document.querySelectorAll('.quick-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() { inputEl.value = btn.getAttribute('data-prompt'); sendMessage(); });
-      });
-
-      // New chat
+      // ── New Chat ──
       document.getElementById('newChatBtn').addEventListener('click', function() {
         state.history = [];
+        state.inChat = false;
         localStorage.removeItem('tc_history');
         messagesEl.textContent = '';
-        showWelcome();
+        landingEl.classList.remove('hidden');
+        chatViewEl.classList.remove('active');
+        landingInput.focus();
       });
 
-      // Settings
+      // ── Settings ──
       var settingsModal = document.getElementById('settingsModal');
       var providerSelect = document.getElementById('providerSelect');
       var apiKeySection = document.getElementById('apiKeySection');
@@ -630,7 +714,6 @@
         localStorage.setItem('tc_api_key', state.apiKey);
         localStorage.setItem('tc_profile', JSON.stringify(state.profile));
         settingsModal.classList.remove('visible');
-        addMsg('system', 'Settings saved!');
       });
 
       document.getElementById('resetBtn').addEventListener('click', function() {
