@@ -8,418 +8,305 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0F1117;
-      --surface: #1A1D27;
-      --border: #2A2D37;
-      --text: #E5E7EB;
-      --text-dim: #9CA3AF;
-      --accent: #3B82F6;
-      --accent-bg: rgba(59, 130, 246, 0.1);
-      --user-bg: #1E3A5F;
-      --assistant-bg: #1A1D27;
-      --system-bg: rgba(245, 158, 11, 0.08);
-      --system-text: #F59E0B;
-      --green: #10B981;
-      --red: #EF4444;
+      --bg: #0F1117; --surface: #1A1D27; --border: #2A2D37;
+      --text: #E5E7EB; --text-dim: #9CA3AF; --accent: #3B82F6;
+      --accent-bg: rgba(59,130,246,0.1); --user-bg: #1E3A5F;
+      --green: #10B981; --red: #EF4444;
+      --system-bg: rgba(245,158,11,0.08); --system-text: #F59E0B;
     }
 
     body {
       font-family: -apple-system, system-ui, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      background: var(--bg); color: var(--text);
+      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
     }
 
-    /* ── Header ── */
     .header {
-      display: flex;
-      align-items: center;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
+      display: flex; align-items: center; padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
     }
-
     .header h1 {
-      font-size: 1rem;
-      font-weight: 600;
+      font-size: 1rem; font-weight: 600;
       background: linear-gradient(135deg, #3B82F6, #10B981);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
 
-    .header-right {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .hdr-btn {
+      padding: 0.3rem 0.7rem; border: 1px solid var(--border); border-radius: 6px;
+      background: transparent; color: var(--text-dim); font-size: 0.75rem; cursor: pointer;
     }
+    .hdr-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-    .api-key-btn {
-      padding: 0.3rem 0.7rem;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: transparent;
-      color: var(--text-dim);
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
-
-    .api-key-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .api-key-btn.configured { border-color: var(--green); color: var(--green); }
-
-    /* ── Messages ── */
     .messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+      flex: 1; overflow-y: auto; padding: 1rem;
+      display: flex; flex-direction: column; gap: 1rem;
     }
 
     .msg {
-      max-width: 85%;
-      padding: 0.75rem 1rem;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      line-height: 1.65;
-      word-wrap: break-word;
-      white-space: pre-wrap;
+      max-width: 85%; padding: 0.75rem 1rem; border-radius: 12px;
+      font-size: 0.9rem; line-height: 1.65; word-wrap: break-word; white-space: pre-wrap;
     }
-
-    .msg.user {
-      align-self: flex-end;
-      background: var(--user-bg);
-      border-bottom-right-radius: 4px;
-    }
-
+    .msg.user { align-self: flex-end; background: var(--user-bg); border-bottom-right-radius: 4px; }
     .msg.assistant {
-      align-self: flex-start;
-      background: var(--assistant-bg);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-      max-width: 92%;
+      align-self: flex-start; background: var(--surface); border: 1px solid var(--border);
+      border-bottom-left-radius: 4px; max-width: 92%;
     }
-
     .msg.system {
-      align-self: center;
-      background: var(--system-bg);
-      color: var(--system-text);
-      font-size: 0.8rem;
-      text-align: center;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
+      align-self: center; background: var(--system-bg); color: var(--system-text);
+      font-size: 0.8rem; text-align: center; padding: 0.5rem 1rem; border-radius: 8px;
     }
-
     .msg.welcome {
-      align-self: center;
-      text-align: center;
-      background: transparent;
-      color: var(--text-dim);
-      font-size: 0.85rem;
-      padding: 2rem 1rem;
-      max-width: 400px;
+      align-self: center; text-align: center; background: transparent;
+      color: var(--text-dim); font-size: 0.85rem; padding: 2rem 1rem; max-width: 420px;
     }
-
-    .msg.welcome h2 {
-      font-size: 1.3rem;
-      color: var(--text);
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-
-    .msg.welcome p {
-      margin-bottom: 1rem;
-      line-height: 1.6;
-    }
-
-    /* Streaming cursor */
     .msg.assistant.streaming::after {
-      content: '▊';
-      animation: blink 0.8s infinite;
-      color: var(--accent);
+      content: '\u2588'; animation: blink 0.8s infinite; color: var(--accent);
     }
+    @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
 
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
+    /* Onboarding */
+    .onboarding { max-width: 380px; align-self: center; padding: 1.5rem; }
+    .ob-option {
+      display: block; width: 100%; padding: 0.6rem 0.9rem; margin-bottom: 0.5rem;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
+      color: var(--text); font-size: 0.85rem; cursor: pointer; text-align: left;
     }
-
-    /* ── Quick Actions ── */
-    .quick-actions {
-      display: flex;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      overflow-x: auto;
-      flex-shrink: 0;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .quick-actions::-webkit-scrollbar { display: none; }
-
-    .quick-btn {
-      white-space: nowrap;
-      padding: 0.45rem 0.9rem;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: transparent;
-      color: var(--text-dim);
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.15s;
-      flex-shrink: 0;
-    }
-
-    .quick-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: var(--accent-bg);
-    }
-
-    /* ── Input Area ── */
-    .input-area {
-      display: flex;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      border-top: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .input-area textarea {
-      flex: 1;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.6rem 0.9rem;
-      font-size: 0.9rem;
-      resize: none;
-      font-family: inherit;
+    .ob-option:hover { border-color: var(--accent); background: var(--accent-bg); }
+    .ob-input {
+      width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg); color: var(--text); font-size: 0.85rem; margin-bottom: 0.5rem;
       outline: none;
-      background: var(--surface);
-      color: var(--text);
-      min-height: 42px;
-      max-height: 120px;
     }
+    .ob-input:focus { border-color: var(--accent); }
 
+    .quick-actions {
+      display: flex; gap: 0.5rem; padding: 0.5rem 1rem; overflow-x: auto;
+      flex-shrink: 0; -webkit-overflow-scrolling: touch;
+    }
+    .quick-actions::-webkit-scrollbar { display: none; }
+    .quick-btn {
+      white-space: nowrap; padding: 0.45rem 0.9rem; border: 1px solid var(--border);
+      border-radius: 20px; background: transparent; color: var(--text-dim);
+      font-size: 0.8rem; cursor: pointer; flex-shrink: 0;
+    }
+    .quick-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+
+    .input-area {
+      display: flex; gap: 0.5rem; padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+    .input-area textarea {
+      flex: 1; border: 1px solid var(--border); border-radius: 10px;
+      padding: 0.6rem 0.9rem; font-size: 0.9rem; resize: none; font-family: inherit;
+      outline: none; background: var(--surface); color: var(--text);
+      min-height: 42px; max-height: 120px;
+    }
     .input-area textarea::placeholder { color: var(--text-dim); }
     .input-area textarea:focus { border-color: var(--accent); }
-
     .send-btn {
-      width: 42px;
-      height: 42px;
-      border: none;
-      border-radius: 10px;
-      background: var(--accent);
-      color: white;
-      cursor: pointer;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: opacity 0.15s;
+      width: 42px; height: 42px; border: none; border-radius: 10px;
+      background: var(--accent); color: white; cursor: pointer; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-
     .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .send-btn:hover:not(:disabled) { opacity: 0.85; }
 
-    /* ── API Key Modal ── */
+    /* Settings modal */
     .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      z-index: 100; align-items: center; justify-content: center;
     }
-
     .modal-overlay.visible { display: flex; }
-
     .modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      width: 90%;
-      max-width: 400px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 400px;
     }
-
     .modal h3 { margin-bottom: 0.75rem; font-size: 1rem; }
-
-    .modal input {
-      width: 100%;
-      padding: 0.6rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg);
-      color: var(--text);
-      font-size: 0.85rem;
-      margin-bottom: 0.75rem;
-      outline: none;
-      font-family: monospace;
+    .modal label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.3rem; margin-top: 0.75rem; }
+    .modal input, .modal select {
+      width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg); color: var(--text); font-size: 0.85rem; outline: none;
     }
-
-    .modal input:focus { border-color: var(--accent); }
-
-    .modal-actions {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: flex-end;
-    }
-
-    .modal-actions button {
-      padding: 0.4rem 1rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      border: none;
-    }
-
+    .modal input:focus, .modal select:focus { border-color: var(--accent); }
+    .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+    .modal-actions button { padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.85rem; cursor: pointer; border: none; }
     .btn-primary { background: var(--accent); color: white; }
     .btn-secondary { background: transparent; color: var(--text-dim); border: 1px solid var(--border) !important; }
+    .btn-danger { background: var(--red); color: white; }
 
-    /* ── Responsive ── */
-    @media (max-width: 640px) {
-      .msg { max-width: 95%; }
-      .msg.assistant { max-width: 98%; }
-    }
+    @media (max-width: 640px) { .msg { max-width: 95%; } .msg.assistant { max-width: 98%; } }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
   <div class="header">
     <h1>Trading Copilot</h1>
     <div class="header-right">
-      <button class="api-key-btn" id="apiKeyBtn">Set API Key</button>
+      <button class="hdr-btn" id="settingsBtn">Settings</button>
+      <button class="hdr-btn" id="newChatBtn">New Chat</button>
     </div>
   </div>
 
-  <!-- Messages -->
-  <div class="messages" id="messages">
-    <div class="msg welcome">
-      <h2>Trading Copilot</h2>
-      <p>告诉我你的交易想法，我会自动选择最合适的分析方法。</p>
-      <p style="font-size: 0.75rem; color: var(--text-dim);">支持：市场研判 · 选股筛选 · 个股分析 · 财报解读 · 仓位计算 · A股复盘</p>
-    </div>
-  </div>
+  <div class="messages" id="messages"></div>
 
-  <!-- Quick Actions -->
   <div class="quick-actions">
     <button class="quick-btn" data-prompt="今天市场有什么重要的事情？帮我做一个快速复盘：大盘表现、热点板块、重要新闻。">📊 今日热点</button>
     <button class="quick-btn" data-prompt="帮我检查一下我的持仓情况，有没有需要注意的风险信号？">💼 我的持仓</button>
-    <button class="quick-btn" data-prompt="根据当前市场环境，帮我找几只值得关注的股票。先问我偏好什么风格（成长/价值/动量/主题）。">🔍 帮我选股</button>
+    <button class="quick-btn" data-prompt="根据当前市场环境，帮我找几只值得关注的股票。先问我偏好什么风格。">🔍 帮我选股</button>
     <button class="quick-btn" data-prompt="给我一个综合策略建议：当前市场环境怎么样？我应该进攻还是防守？确信度评分是多少？">🎯 策略建议</button>
     <button class="quick-btn" data-prompt="请做一次完整的 A 股复盘：涨停板分析、板块强弱、轮动信号、热门概念、异常信号。">🇨🇳 A股复盘</button>
     <button class="quick-btn" data-prompt="本周有哪些重要公司发布财报？帮我标注值得重点关注的。">📅 财报日历</button>
   </div>
 
-  <!-- Input -->
   <div class="input-area">
     <textarea id="input" placeholder="输入你的交易想法..." rows="1"></textarea>
     <button class="send-btn" id="sendBtn" disabled>↑</button>
   </div>
 
-  <!-- API Key Modal -->
-  <div class="modal-overlay" id="modal">
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
     <div class="modal">
-      <h3>Anthropic API Key</h3>
-      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
-      <p style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.75rem;">
-        Key 仅存储在浏览器本地，不会上传到任何服务器。
-      </p>
+      <h3>Settings</h3>
+      <label>AI Provider</label>
+      <select id="providerSelect">
+        <option value="minimax">MiniMax (Free)</option>
+        <option value="anthropic">Anthropic Claude (BYOK)</option>
+      </select>
+      <div id="apiKeySection" style="display:none">
+        <label>Anthropic API Key</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
+      </div>
+      <label>Your Name</label>
+      <input type="text" id="profileName" placeholder="e.g. Park" />
+      <label>Trading Style</label>
+      <select id="profileStyle">
+        <option value="">Select...</option>
+        <option value="growth">Growth</option>
+        <option value="value">Value</option>
+        <option value="momentum">Momentum</option>
+        <option value="swing">Swing</option>
+        <option value="macro">Macro</option>
+      </select>
+      <label>Markets</label>
+      <select id="profileMarkets">
+        <option value="us">US Stocks</option>
+        <option value="ashare">A-Shares</option>
+        <option value="both">Both</option>
+        <option value="crypto">Crypto</option>
+      </select>
+      <label>Risk Tolerance</label>
+      <select id="profileRisk">
+        <option value="conservative">Conservative</option>
+        <option value="moderate">Moderate</option>
+        <option value="aggressive">Aggressive</option>
+      </select>
       <div class="modal-actions">
-        <button class="btn-secondary" id="modalCancel">取消</button>
-        <button class="btn-primary" id="modalSave">保存</button>
+        <button class="btn-danger" id="resetBtn">Reset</button>
+        <button class="btn-secondary" id="settingsCancel">Cancel</button>
+        <button class="btn-primary" id="settingsSave">Save</button>
       </div>
     </div>
   </div>
 
   <script>
     (function() {
-      // State
       var state = {
-        apiKey: localStorage.getItem('anthropic_key') || '',
-        history: [],
+        provider: localStorage.getItem('tc_provider') || 'minimax',
+        apiKey: localStorage.getItem('tc_api_key') || '',
+        profile: JSON.parse(localStorage.getItem('tc_profile') || 'null'),
+        history: JSON.parse(localStorage.getItem('tc_history') || '[]'),
         streaming: false,
         currentMsg: null
       };
 
-      // DOM
       var messagesEl = document.getElementById('messages');
       var inputEl = document.getElementById('input');
       var sendBtn = document.getElementById('sendBtn');
-      var apiKeyBtn = document.getElementById('apiKeyBtn');
-      var modal = document.getElementById('modal');
-      var apiKeyInput = document.getElementById('apiKeyInput');
 
       // Init
-      updateApiKeyUI();
-      inputEl.addEventListener('input', function() {
-        sendBtn.disabled = !inputEl.value.trim() || state.streaming;
-        // Auto-resize
-        inputEl.style.height = 'auto';
-        inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
-      });
-
-      // Send on Enter (Shift+Enter for newline)
-      inputEl.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          if (!sendBtn.disabled) sendMessage();
-        }
-      });
-
-      sendBtn.addEventListener('click', sendMessage);
-
-      // Quick action buttons
-      document.querySelectorAll('.quick-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var prompt = btn.getAttribute('data-prompt');
-          inputEl.value = prompt;
-          sendMessage();
-        });
-      });
-
-      // API Key modal
-      apiKeyBtn.addEventListener('click', function() {
-        apiKeyInput.value = state.apiKey;
-        modal.classList.add('visible');
-        apiKeyInput.focus();
-      });
-
-      document.getElementById('modalCancel').addEventListener('click', function() {
-        modal.classList.remove('visible');
-      });
-
-      document.getElementById('modalSave').addEventListener('click', function() {
-        state.apiKey = apiKeyInput.value.trim();
-        localStorage.setItem('anthropic_key', state.apiKey);
-        modal.classList.remove('visible');
-        updateApiKeyUI();
-        if (state.apiKey) {
-          addMessage('system', 'API Key 已保存。开始聊吧！');
-        }
-      });
-
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) modal.classList.remove('visible');
-      });
-
-      function updateApiKeyUI() {
-        if (state.apiKey) {
-          apiKeyBtn.textContent = 'Key ✓';
-          apiKeyBtn.classList.add('configured');
-        } else {
-          apiKeyBtn.textContent = 'Set API Key';
-          apiKeyBtn.classList.remove('configured');
-        }
+      if (!state.profile) {
+        showOnboarding();
+      } else {
+        showWelcome();
+        restoreHistory();
       }
 
-      function addMessage(role, text) {
+      // Onboarding
+      function showOnboarding() {
+        var div = document.createElement('div');
+        div.className = 'onboarding';
+
+        var title = document.createElement('h3');
+        title.textContent = 'Welcome! Tell me about yourself.';
+        title.style.cssText = 'font-size:0.95rem;margin-bottom:0.75rem';
+        div.appendChild(title);
+
+        var nameInput = document.createElement('input');
+        nameInput.className = 'ob-input';
+        nameInput.placeholder = 'Your name';
+        nameInput.id = 'obName';
+        div.appendChild(nameInput);
+
+        var hint = document.createElement('p');
+        hint.textContent = 'Trading style:';
+        hint.style.cssText = 'font-size:0.8rem;color:var(--text-dim);margin:0.5rem 0';
+        div.appendChild(hint);
+
+        var styles = [
+          ['growth', 'Growth / 成长股'],
+          ['value', 'Value / 价值投资'],
+          ['momentum', 'Momentum / 动量'],
+          ['swing', 'Swing / 波段'],
+          ['macro', 'Macro / 宏观']
+        ];
+
+        styles.forEach(function(s) {
+          var btn = document.createElement('button');
+          btn.className = 'ob-option';
+          btn.textContent = s[1];
+          btn.setAttribute('data-style', s[0]);
+          btn.addEventListener('click', function() {
+            var name = document.getElementById('obName').value.trim() || 'Trader';
+            state.profile = { name: name, style: s[0], markets: 'both', risk: 'moderate' };
+            localStorage.setItem('tc_profile', JSON.stringify(state.profile));
+            div.remove();
+            showWelcome();
+            addMsg('system', 'Profile saved! Analysis will be tailored to your style.');
+          });
+          div.appendChild(btn);
+        });
+
+        messagesEl.appendChild(div);
+      }
+
+      function showWelcome() {
+        var name = state.profile ? state.profile.name : 'Trader';
+        var div = document.createElement('div');
+        div.className = 'msg welcome';
+
+        var h2 = document.createElement('h2');
+        h2.textContent = 'Hey ' + name + ' \uD83D\uDC4B';
+        h2.style.cssText = 'font-size:1.3rem;color:var(--text);margin-bottom:0.5rem';
+        div.appendChild(h2);
+
+        var p1 = document.createElement('p');
+        p1.textContent = '告诉我你的交易想法，或者点击下面的快捷按钮开始。';
+        p1.style.marginBottom = '1rem';
+        div.appendChild(p1);
+
+        var p2 = document.createElement('p');
+        p2.textContent = '市场研判 \u00B7 选股筛选 \u00B7 个股分析 \u00B7 财报解读 \u00B7 仓位计算 \u00B7 A股复盘';
+        p2.style.cssText = 'font-size:0.75rem;color:var(--text-dim)';
+        div.appendChild(p2);
+
+        messagesEl.appendChild(div);
+      }
+
+      function restoreHistory() {
+        state.history.forEach(function(m) { addMsg(m.role, m.content); });
+      }
+
+      function addMsg(role, text) {
         var div = document.createElement('div');
         div.className = 'msg ' + role;
         div.textContent = text;
@@ -428,40 +315,39 @@
         return div;
       }
 
+      function buildUserProfile() {
+        if (!state.profile) return '';
+        var p = state.profile;
+        return ['Name: ' + (p.name || ''), 'Style: ' + (p.style || ''), 'Markets: ' + (p.markets || ''), 'Risk: ' + (p.risk || '')].join('\n');
+      }
+
       function sendMessage() {
         var text = inputEl.value.trim();
         if (!text || state.streaming) return;
 
-        if (!state.apiKey) {
-          addMessage('system', '请先设置 API Key（右上角按钮）');
-          return;
-        }
-
-        // Add user message
-        addMessage('user', text);
+        addMsg('user', text);
         state.history.push({ role: 'user', content: text });
+        saveHistory();
         inputEl.value = '';
         inputEl.style.height = 'auto';
         sendBtn.disabled = true;
         state.streaming = true;
 
-        // Create assistant message placeholder
-        state.currentMsg = addMessage('assistant', '');
+        state.currentMsg = addMsg('assistant', '');
         state.currentMsg.classList.add('streaming');
 
-        // Call API
         fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: text,
-            history: state.history.slice(0, -1), // exclude current message (already in 'message')
-            api_key: state.apiKey
+            history: state.history.slice(0, -1),
+            provider: state.provider,
+            api_key: state.provider === 'anthropic' ? state.apiKey : '',
+            user_profile: buildUserProfile()
           })
         }).then(function(response) {
-          if (!response.ok) {
-            throw new Error('API error: ' + response.status);
-          }
+          if (!response.ok) throw new Error('API error: ' + response.status);
           var reader = response.body.getReader();
           var decoder = new TextDecoder();
           var buffer = '';
@@ -469,71 +355,117 @@
 
           function read() {
             reader.read().then(function(result) {
-              if (result.done) {
-                finishStreaming(fullText);
-                return;
-              }
-
+              if (result.done) { finish(fullText); return; }
               buffer += decoder.decode(result.value, { stream: true });
               var lines = buffer.split('\n');
-              buffer = lines.pop(); // keep incomplete line
-
+              buffer = lines.pop();
               lines.forEach(function(line) {
-                if (line.startsWith('data: ')) {
-                  try {
-                    var data = JSON.parse(line.slice(6));
-                    if (data.type === 'text') {
-                      fullText += data.text;
-                      state.currentMsg.textContent = fullText;
-                      messagesEl.scrollTop = messagesEl.scrollHeight;
-                    } else if (data.type === 'done') {
-                      finishStreaming(fullText);
-                      return;
-                    } else if (data.type === 'error') {
-                      state.currentMsg.textContent = 'Error: ' + data.error;
-                      finishStreaming('');
-                      return;
-                    }
-                  } catch(e) {}
-                }
+                if (!line.startsWith('data: ')) return;
+                try {
+                  var data = JSON.parse(line.slice(6));
+                  if (data.type === 'text') {
+                    fullText += data.text;
+                    state.currentMsg.textContent = fullText;
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
+                  } else if (data.type === 'done') { finish(fullText); }
+                  else if (data.type === 'error') {
+                    state.currentMsg.textContent = 'Error: ' + data.error;
+                    finish('');
+                  }
+                } catch(e) {}
               });
-
               read();
-            }).catch(function(err) {
-              state.currentMsg.textContent = 'Stream error: ' + err.message;
-              finishStreaming('');
-            });
+            }).catch(function(err) { state.currentMsg.textContent = 'Error: ' + err.message; finish(''); });
           }
-
           read();
-        }).catch(function(err) {
-          state.currentMsg.textContent = 'Request failed: ' + err.message;
-          finishStreaming('');
-        });
+        }).catch(function(err) { state.currentMsg.textContent = 'Error: ' + err.message; finish(''); });
       }
 
-      function finishStreaming(fullText) {
-        if (state.currentMsg) {
-          state.currentMsg.classList.remove('streaming');
-        }
-        if (fullText) {
-          state.history.push({ role: 'assistant', content: fullText });
-        }
+      function finish(fullText) {
+        if (state.currentMsg) state.currentMsg.classList.remove('streaming');
+        if (fullText) { state.history.push({ role: 'assistant', content: fullText }); saveHistory(); }
         state.currentMsg = null;
         state.streaming = false;
         sendBtn.disabled = !inputEl.value.trim();
       }
 
-      // Check server config on load
-      fetch('/api/config').then(function(r) { return r.json(); }).then(function(cfg) {
-        if (cfg.has_api_key && !state.apiKey) {
-          addMessage('system', '服务器已配置 API Key，可以直接开始对话。');
-          state.apiKey = '__server__'; // sentinel — server will use its own key
-          updateApiKeyUI();
-        }
-      }).catch(function() {});
+      function saveHistory() {
+        localStorage.setItem('tc_history', JSON.stringify(state.history.slice(-20)));
+      }
+
+      // Input
+      inputEl.addEventListener('input', function() {
+        sendBtn.disabled = !inputEl.value.trim() || state.streaming;
+        inputEl.style.height = 'auto';
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+      });
+      inputEl.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendMessage(); }
+      });
+      sendBtn.addEventListener('click', sendMessage);
+
+      // Quick actions
+      document.querySelectorAll('.quick-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() { inputEl.value = btn.getAttribute('data-prompt'); sendMessage(); });
+      });
+
+      // New chat
+      document.getElementById('newChatBtn').addEventListener('click', function() {
+        state.history = [];
+        localStorage.removeItem('tc_history');
+        messagesEl.textContent = '';
+        showWelcome();
+      });
+
+      // Settings
+      var settingsModal = document.getElementById('settingsModal');
+      var providerSelect = document.getElementById('providerSelect');
+      var apiKeySection = document.getElementById('apiKeySection');
+
+      document.getElementById('settingsBtn').addEventListener('click', function() {
+        providerSelect.value = state.provider;
+        document.getElementById('apiKeyInput').value = state.apiKey;
+        document.getElementById('profileName').value = state.profile ? state.profile.name : '';
+        document.getElementById('profileStyle').value = state.profile ? state.profile.style : '';
+        document.getElementById('profileMarkets').value = state.profile ? state.profile.markets : 'both';
+        document.getElementById('profileRisk').value = state.profile ? state.profile.risk : 'moderate';
+        apiKeySection.style.display = providerSelect.value === 'anthropic' ? 'block' : 'none';
+        settingsModal.classList.add('visible');
+      });
+
+      providerSelect.addEventListener('change', function() {
+        apiKeySection.style.display = providerSelect.value === 'anthropic' ? 'block' : 'none';
+      });
+
+      document.getElementById('settingsCancel').addEventListener('click', function() { settingsModal.classList.remove('visible'); });
+
+      document.getElementById('settingsSave').addEventListener('click', function() {
+        state.provider = providerSelect.value;
+        state.apiKey = document.getElementById('apiKeyInput').value.trim();
+        state.profile = {
+          name: document.getElementById('profileName').value.trim() || 'Trader',
+          style: document.getElementById('profileStyle').value,
+          markets: document.getElementById('profileMarkets').value,
+          risk: document.getElementById('profileRisk').value
+        };
+        localStorage.setItem('tc_provider', state.provider);
+        localStorage.setItem('tc_api_key', state.apiKey);
+        localStorage.setItem('tc_profile', JSON.stringify(state.profile));
+        settingsModal.classList.remove('visible');
+        addMsg('system', 'Settings saved!');
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', function() {
+        if (!confirm('Clear all data?')) return;
+        localStorage.removeItem('tc_provider');
+        localStorage.removeItem('tc_api_key');
+        localStorage.removeItem('tc_profile');
+        localStorage.removeItem('tc_history');
+        location.reload();
+      });
+
+      settingsModal.addEventListener('click', function(e) { if (e.target === settingsModal) settingsModal.classList.remove('visible'); });
     })();
   </script>
-
 </body>
 </html>
