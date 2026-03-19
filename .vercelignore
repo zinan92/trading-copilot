@@ -1,0 +1,7 @@
+skills/
+agents/
+.claude-plugin/
+docs/
+*.sh
+LICENSE
+.git
