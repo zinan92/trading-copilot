@@ -14,7 +14,7 @@ SYSTEM_PROMPT = PROMPT_PATH.read_text() if PROMPT_PATH.exists() else "You are a 
 
 # Platform MiniMax key (free tier for users without their own key)
 MINIMAX_API_KEY = os.environ.get("MINIMAX_API_KEY", "")
-MINIMAX_URL = "https://api.minimaxi.chat/v1/chat/completions"
+MINIMAX_URL = "https://api.minimax.chat/v1/chat/completions"
 MINIMAX_MODEL = "MiniMax-M1"
 
 # Optional Anthropic key (for BYOK users or server-side config)
