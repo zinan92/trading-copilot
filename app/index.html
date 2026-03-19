@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Trading Copilot</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0F1117;
+      --surface: #1A1D27;
+      --border: #2A2D37;
+      --text: #E5E7EB;
+      --text-dim: #9CA3AF;
+      --accent: #3B82F6;
+      --accent-bg: rgba(59, 130, 246, 0.1);
+      --user-bg: #1E3A5F;
+      --assistant-bg: #1A1D27;
+      --system-bg: rgba(245, 158, 11, 0.08);
+      --system-text: #F59E0B;
+      --green: #10B981;
+      --red: #EF4444;
+    }
+
+    body {
+      font-family: -apple-system, system-ui, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      font-size: 1rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #3B82F6, #10B981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .api-key-btn {
+      padding: 0.3rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .api-key-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .api-key-btn.configured { border-color: var(--green); color: var(--green); }
+
+    /* ── Messages ── */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .msg {
+      max-width: 85%;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.65;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      background: var(--user-bg);
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.assistant {
+      align-self: flex-start;
+      background: var(--assistant-bg);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      max-width: 92%;
+    }
+
+    .msg.system {
+      align-self: center;
+      background: var(--system-bg);
+      color: var(--system-text);
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+    }
+
+    .msg.welcome {
+      align-self: center;
+      text-align: center;
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      padding: 2rem 1rem;
+      max-width: 400px;
+    }
+
+    .msg.welcome h2 {
+      font-size: 1.3rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .msg.welcome p {
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    /* Streaming cursor */
+    .msg.assistant.streaming::after {
+      content: '▊';
+      animation: blink 0.8s infinite;
+      color: var(--accent);
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* ── Quick Actions ── */
+    .quick-actions {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      overflow-x: auto;
+      flex-shrink: 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .quick-actions::-webkit-scrollbar { display: none; }
+
+    .quick-btn {
+      white-space: nowrap;
+      padding: 0.45rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .quick-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    /* ── Input Area ── */
+    .input-area {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .input-area textarea {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.9rem;
+      resize: none;
+      font-family: inherit;
+      outline: none;
+      background: var(--surface);
+      color: var(--text);
+      min-height: 42px;
+      max-height: 120px;
+    }
+
+    .input-area textarea::placeholder { color: var(--text-dim); }
+    .input-area textarea:focus { border-color: var(--accent); }
+
+    .send-btn {
+      width: 42px;
+      height: 42px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+
+    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .send-btn:hover:not(:disabled) { opacity: 0.85; }
+
+    /* ── API Key Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.visible { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .modal h3 { margin-bottom: 0.75rem; font-size: 1rem; }
+
+    .modal input {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+      outline: none;
+      font-family: monospace;
+    }
+
+    .modal input:focus { border-color: var(--accent); }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    .modal-actions button {
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-secondary { background: transparent; color: var(--text-dim); border: 1px solid var(--border) !important; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .msg { max-width: 95%; }
+      .msg.assistant { max-width: 98%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Trading Copilot</h1>
+    <div class="header-right">
+      <button class="api-key-btn" id="apiKeyBtn">Set API Key</button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="messages" id="messages">
+    <div class="msg welcome">
+      <h2>Trading Copilot</h2>
+      <p>告诉我你的交易想法，我会自动选择最合适的分析方法。</p>
+      <p style="font-size: 0.75rem; color: var(--text-dim);">支持：市场研判 · 选股筛选 · 个股分析 · 财报解读 · 仓位计算 · A股复盘</p>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <button class="quick-btn" data-prompt="今天市场有什么重要的事情？帮我做一个快速复盘：大盘表现、热点板块、重要新闻。">📊 今日热点</button>
+    <button class="quick-btn" data-prompt="帮我检查一下我的持仓情况，有没有需要注意的风险信号？">💼 我的持仓</button>
+    <button class="quick-btn" data-prompt="根据当前市场环境，帮我找几只值得关注的股票。先问我偏好什么风格（成长/价值/动量/主题）。">🔍 帮我选股</button>
+    <button class="quick-btn" data-prompt="给我一个综合策略建议：当前市场环境怎么样？我应该进攻还是防守？确信度评分是多少？">🎯 策略建议</button>
+    <button class="quick-btn" data-prompt="请做一次完整的 A 股复盘：涨停板分析、板块强弱、轮动信号、热门概念、异常信号。">🇨🇳 A股复盘</button>
+    <button class="quick-btn" data-prompt="本周有哪些重要公司发布财报？帮我标注值得重点关注的。">📅 财报日历</button>
+  </div>
+
+  <!-- Input -->
+  <div class="input-area">
+    <textarea id="input" placeholder="输入你的交易想法..." rows="1"></textarea>
+    <button class="send-btn" id="sendBtn" disabled>↑</button>
+  </div>
+
+  <!-- API Key Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h3>Anthropic API Key</h3>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
+      <p style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.75rem;">
+        Key 仅存储在浏览器本地，不会上传到任何服务器。
+      </p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="modalCancel">取消</button>
+        <button class="btn-primary" id="modalSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // State
+      var state = {
+        apiKey: localStorage.getItem('anthropic_key') || '',
+        history: [],
+        streaming: false,
+        currentMsg: null
+      };
+
+      // DOM
+      var messagesEl = document.getElementById('messages');
+      var inputEl = document.getElementById('input');
+      var sendBtn = document.getElementById('sendBtn');
+      var apiKeyBtn = document.getElementById('apiKeyBtn');
+      var modal = document.getElementById('modal');
+      var apiKeyInput = document.getElementById('apiKeyInput');
+
+      // Init
+      updateApiKeyUI();
+      inputEl.addEventListener('input', function() {
+        sendBtn.disabled = !inputEl.value.trim() || state.streaming;
+        // Auto-resize
+        inputEl.style.height = 'auto';
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+      });
+
+      // Send on Enter (Shift+Enter for newline)
+      inputEl.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (!sendBtn.disabled) sendMessage();
+        }
+      });
+
+      sendBtn.addEventListener('click', sendMessage);
+
+      // Quick action buttons
+      document.querySelectorAll('.quick-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var prompt = btn.getAttribute('data-prompt');
+          inputEl.value = prompt;
+          sendMessage();
+        });
+      });
+
+      // API Key modal
+      apiKeyBtn.addEventListener('click', function() {
+        apiKeyInput.value = state.apiKey;
+        modal.classList.add('visible');
+        apiKeyInput.focus();
+      });
+
+      document.getElementById('modalCancel').addEventListener('click', function() {
+        modal.classList.remove('visible');
+      });
+
+      document.getElementById('modalSave').addEventListener('click', function() {
+        state.apiKey = apiKeyInput.value.trim();
+        localStorage.setItem('anthropic_key', state.apiKey);
+        modal.classList.remove('visible');
+        updateApiKeyUI();
+        if (state.apiKey) {
+          addMessage('system', 'API Key 已保存。开始聊吧！');
+        }
+      });
+
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) modal.classList.remove('visible');
+      });
+
+      function updateApiKeyUI() {
+        if (state.apiKey) {
+          apiKeyBtn.textContent = 'Key ✓';
+          apiKeyBtn.classList.add('configured');
+        } else {
+          apiKeyBtn.textContent = 'Set API Key';
+          apiKeyBtn.classList.remove('configured');
+        }
+      }
+
+      function addMessage(role, text) {
+        var div = document.createElement('div');
+        div.className = 'msg ' + role;
+        div.textContent = text;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        return div;
+      }
+
+      function sendMessage() {
+        var text = inputEl.value.trim();
+        if (!text || state.streaming) return;
+
+        if (!state.apiKey) {
+          addMessage('system', '请先设置 API Key（右上角按钮）');
+          return;
+        }
+
+        // Add user message
+        addMessage('user', text);
+        state.history.push({ role: 'user', content: text });
+        inputEl.value = '';
+        inputEl.style.height = 'auto';
+        sendBtn.disabled = true;
+        state.streaming = true;
+
+        // Create assistant message placeholder
+        state.currentMsg = addMessage('assistant', '');
+        state.currentMsg.classList.add('streaming');
+
+        // Call API
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            history: state.history.slice(0, -1), // exclude current message (already in 'message')
+            api_key: state.apiKey
+          })
+        }).then(function(response) {
+          if (!response.ok) {
+            throw new Error('API error: ' + response.status);
+          }
+          var reader = response.body.getReader();
+          var decoder = new TextDecoder();
+          var buffer = '';
+          var fullText = '';
+
+          function read() {
+            reader.read().then(function(result) {
+              if (result.done) {
+                finishStreaming(fullText);
+                return;
+              }
+
+              buffer += decoder.decode(result.value, { stream: true });
+              var lines = buffer.split('\n');
+              buffer = lines.pop(); // keep incomplete line
+
+              lines.forEach(function(line) {
+                if (line.startsWith('data: ')) {
+                  try {
+                    var data = JSON.parse(line.slice(6));
+                    if (data.type === 'text') {
+                      fullText += data.text;
+                      state.currentMsg.textContent = fullText;
+                      messagesEl.scrollTop = messagesEl.scrollHeight;
+                    } else if (data.type === 'done') {
+                      finishStreaming(fullText);
+                      return;
+                    } else if (data.type === 'error') {
+                      state.currentMsg.textContent = 'Error: ' + data.error;
+                      finishStreaming('');
+                      return;
+                    }
+                  } catch(e) {}
+                }
+              });
+
+              read();
+            }).catch(function(err) {
+              state.currentMsg.textContent = 'Stream error: ' + err.message;
+              finishStreaming('');
+            });
+          }
+
+          read();
+        }).catch(function(err) {
+          state.currentMsg.textContent = 'Request failed: ' + err.message;
+          finishStreaming('');
+        });
+      }
+
+      function finishStreaming(fullText) {
+        if (state.currentMsg) {
+          state.currentMsg.classList.remove('streaming');
+        }
+        if (fullText) {
+          state.history.push({ role: 'assistant', content: fullText });
+        }
+        state.currentMsg = null;
+        state.streaming = false;
+        sendBtn.disabled = !inputEl.value.trim();
+      }
+
+      // Check server config on load
+      fetch('/api/config').then(function(r) { return r.json(); }).then(function(cfg) {
+        if (cfg.has_api_key && !state.apiKey) {
+          addMessage('system', '服务器已配置 API Key，可以直接开始对话。');
+          state.apiKey = '__server__'; // sentinel — server will use its own key
+          updateApiKeyUI();
+        }
+      }).catch(function() {});
+    })();
+  </script>
+
+</body>
+</html>
