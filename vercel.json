@@ -1,7 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/chat", "destination": "/api/chat" },
-    { "source": "/api/config", "destination": "/api/config" },
     { "source": "/", "destination": "/app/index.html" }
   ],
   "headers": [
@@ -15,7 +13,8 @@
     }
   ],
   "functions": {
-    "api/chat.py": {
+    "api/*.py": {
+      "runtime": "@vercel/python@3.12.7",
       "maxDuration": 60
     }
   }

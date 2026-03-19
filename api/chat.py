@@ -1,9 +1,9 @@
-"""Vercel serverless function for /api/chat — proxies to MiniMax or Anthropic with streaming."""
+"""Vercel serverless: POST /api/chat — proxy to MiniMax or Anthropic with streaming."""
 
 import os
 import json
+from http.server import BaseHTTPRequestHandler
 from http.client import HTTPSConnection
-from urllib.parse import urlparse
 
 SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), '..', 'app', 'prompts', 'SKILL.md')
 try:
@@ -12,69 +12,76 @@ try:
 except FileNotFoundError:
     SYSTEM_PROMPT = "You are a trading analysis assistant."
 
-MINIMAX_API_KEY = os.environ.get("MINIMAX_API_KEY", "")
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+MINIMAX_KEY = os.environ.get("MINIMAX_API_KEY", "")
+ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 
-def handler(request):
-    """Vercel serverless handler."""
-    from http.server import BaseHTTPRequestHandler
-    import io
+class handler(BaseHTTPRequestHandler):
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
 
-    if request.method == "OPTIONS":
-        return _cors_response(200, "")
+    def do_POST(self):
+        length = int(self.headers.get("Content-Length", 0))
+        body = json.loads(self.rfile.read(length)) if length else {}
 
-    try:
-        body = json.loads(request.body)
-    except Exception:
-        return _json_response(400, {"error": "Invalid JSON"})
+        user_message = body.get("message", "")
+        history = body.get("history", [])
+        user_profile = body.get("user_profile", "")
+        provider = body.get("provider", "minimax")
+        user_api_key = body.get("api_key", "")
 
-    user_message = body.get("message", "")
-    history = body.get("history", [])
-    user_profile = body.get("user_profile", "")
-    provider = body.get("provider", "minimax")
-    user_api_key = body.get("api_key", "")
+        system = SYSTEM_PROMPT
+        if user_profile:
+            system += "\n\n## Current User Profile\n" + user_profile
 
-    system = SYSTEM_PROMPT
-    if user_profile:
-        system += f"\n\n## Current User Profile\n{user_profile}"
+        messages = [{"role": m["role"], "content": m["content"]} for m in history]
+        messages.append({"role": "user", "content": user_message})
 
-    messages = [{"role": m["role"], "content": m["content"]} for m in history]
-    messages.append({"role": "user", "content": user_message})
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
 
-    if provider == "anthropic":
-        return _stream_anthropic(system, messages, user_api_key or ANTHROPIC_API_KEY)
-    else:
-        return _stream_minimax(system, messages, user_api_key or MINIMAX_API_KEY)
+        try:
+            if provider == "anthropic":
+                self._stream_anthropic(system, messages, user_api_key or ANTHROPIC_KEY)
+            else:
+                self._stream_minimax(system, messages, user_api_key or MINIMAX_KEY)
+        except Exception as e:
+            self._write_event({"type": "error", "error": str(e)})
 
+    def _stream_minimax(self, system, messages, api_key):
+        if not api_key:
+            self._write_event({"type": "error", "error": "No MiniMax API key."})
+            return
 
-def _stream_minimax(system, messages, api_key):
-    if not api_key:
-        return _json_response(400, {"error": "No MiniMax API key configured."})
+        full_messages = [{"role": "system", "content": system}] + messages
+        payload = json.dumps({"model": "MiniMax-M1", "messages": full_messages, "stream": True, "max_tokens": 4096})
 
-    full_messages = [{"role": "system", "content": system}] + messages
-    payload = json.dumps({"model": "MiniMax-M1", "messages": full_messages, "stream": True, "max_tokens": 4096})
-
-    def generate():
-        conn = HTTPSConnection("api.minimax.chat")
+        conn = HTTPSConnection("api.minimax.chat", timeout=60)
         conn.request("POST", "/v1/chat/completions", body=payload, headers={
-            "Authorization": f"Bearer {api_key}",
+            "Authorization": "Bearer " + api_key,
             "Content-Type": "application/json"
         })
         resp = conn.getresponse()
 
         if resp.status != 200:
-            error = resp.read().decode()
-            yield f"data: {json.dumps({'type': 'error', 'error': error})}\n\n"
+            self._write_event({"type": "error", "error": resp.read().decode()})
+            conn.close()
             return
 
-        for line in _iter_lines(resp):
+        for line in self._iter_lines(resp):
             if not line.startswith("data: "):
                 continue
             data = line[6:]
             if data == "[DONE]":
-                yield f"data: {json.dumps({'type': 'done'})}\n\n"
-                return
+                self._write_event({"type": "done"})
+                break
             try:
                 chunk = json.loads(data)
                 choices = chunk.get("choices", [])
@@ -82,24 +89,21 @@ def _stream_minimax(system, messages, api_key):
                     delta = choices[0].get("delta", {})
                     text = delta.get("content", "")
                     if text:
-                        yield f"data: {json.dumps({'type': 'text', 'text': text})}\n\n"
+                        self._write_event({"type": "text", "text": text})
                     if choices[0].get("finish_reason"):
-                        yield f"data: {json.dumps({'type': 'done'})}\n\n"
+                        self._write_event({"type": "done"})
             except json.JSONDecodeError:
                 pass
         conn.close()
 
-    return _streaming_response(generate())
+    def _stream_anthropic(self, system, messages, api_key):
+        if not api_key:
+            self._write_event({"type": "error", "error": "No Anthropic API key."})
+            return
 
+        payload = json.dumps({"model": "claude-sonnet-4-20250514", "max_tokens": 4096, "system": system, "messages": messages, "stream": True})
 
-def _stream_anthropic(system, messages, api_key):
-    if not api_key:
-        return _json_response(400, {"error": "No Anthropic API key."})
-
-    payload = json.dumps({"model": "claude-sonnet-4-20250514", "max_tokens": 4096, "system": system, "messages": messages, "stream": True})
-
-    def generate():
-        conn = HTTPSConnection("api.anthropic.com")
+        conn = HTTPSConnection("api.anthropic.com", timeout=60)
         conn.request("POST", "/v1/messages", body=payload, headers={
             "x-api-key": api_key,
             "anthropic-version": "2023-06-01",
@@ -108,86 +112,44 @@ def _stream_anthropic(system, messages, api_key):
         resp = conn.getresponse()
 
         if resp.status != 200:
-            error = resp.read().decode()
-            yield f"data: {json.dumps({'type': 'error', 'error': error})}\n\n"
+            self._write_event({"type": "error", "error": resp.read().decode()})
+            conn.close()
             return
 
-        for line in _iter_lines(resp):
+        for line in self._iter_lines(resp):
             if not line.startswith("data: "):
                 continue
             data = line[6:]
             if data == "[DONE]":
-                yield f"data: {json.dumps({'type': 'done'})}\n\n"
-                return
+                self._write_event({"type": "done"})
+                break
             try:
                 event = json.loads(data)
                 if event.get("type") == "content_block_delta":
                     text = event.get("delta", {}).get("text", "")
                     if text:
-                        yield f"data: {json.dumps({'type': 'text', 'text': text})}\n\n"
+                        self._write_event({"type": "text", "text": text})
                 elif event.get("type") == "message_stop":
-                    yield f"data: {json.dumps({'type': 'done'})}\n\n"
+                    self._write_event({"type": "done"})
             except json.JSONDecodeError:
                 pass
         conn.close()
 
-    return _streaming_response(generate())
+    def _iter_lines(self, resp):
+        buf = ""
+        while True:
+            chunk = resp.read(4096)
+            if not chunk:
+                if buf.strip():
+                    yield buf.strip()
+                break
+            buf += chunk.decode("utf-8", errors="replace")
+            while "\n" in buf:
+                line, buf = buf.split("\n", 1)
+                line = line.strip()
+                if line:
+                    yield line
 
-
-def _iter_lines(resp):
-    """Read HTTP response line by line."""
-    buf = ""
-    while True:
-        chunk = resp.read(4096)
-        if not chunk:
-            if buf:
-                yield buf
-            break
-        buf += chunk.decode("utf-8", errors="replace")
-        while "\n" in buf:
-            line, buf = buf.split("\n", 1)
-            line = line.strip()
-            if line:
-                yield line
-
-
-def _streaming_response(generator):
-    """Return a Vercel-compatible streaming response."""
-    from http.server import BaseHTTPRequestHandler
-
-    class Response:
-        status_code = 200
-        headers = {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type",
-        }
-        body = "".join(generator)
-
-    return Response()
-
-
-def _json_response(status, data):
-    class Response:
-        status_code = status
-        headers = {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-        }
-        body = json.dumps(data)
-    return Response()
-
-
-def _cors_response(status, body):
-    class Response:
-        status_code = status
-        headers = {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type",
-        }
-        body = ""
-    return Response()
+    def _write_event(self, data):
+        self.wfile.write(("data: " + json.dumps(data) + "\n\n").encode())
+        self.wfile.flush()
