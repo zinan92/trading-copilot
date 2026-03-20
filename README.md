@@ -2,10 +2,10 @@
 
 # Trading Copilot
 
-**44 professional trading methodologies. One AI that picks the right one for your question.**
+**43 professional trading methodologies. One AI that picks the right one for your question.**
 
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Methods](https://img.shields.io/badge/methodologies-44-blue.svg)](https://trading-skills-catalog-xbb3.vercel.app/catalog)
+[![Methods](https://img.shields.io/badge/methodologies-43-blue.svg)](https://trading-skills-catalog-xbb3.vercel.app/catalog)
 [![Try It](https://img.shields.io/badge/Try_It-Live_Demo-2563EB.svg)](https://trading-skills-catalog-xbb3.vercel.app/)
 
 [**Try It Now**](https://trading-skills-catalog-xbb3.vercel.app/) · [Skill Catalog](https://trading-skills-catalog-xbb3.vercel.app/catalog)
@@ -24,13 +24,15 @@
 
 ## What is this?
 
-Traders need many different analysis methods — CANSLIM for growth screening, VCP for breakout patterns, Druckenmiller for strategy synthesis, O'Neil for market timing. But remembering 44 methodologies and knowing which one to use when is hard.
+Traders need many different analysis methods — CANSLIM for growth screening, VCP for breakout patterns, Druckenmiller for strategy synthesis, O'Neil for market timing. But remembering 43 methodologies and knowing which one to use when is hard.
 
 **Trading Copilot solves this.** Describe your trading idea in plain language (English or Chinese). The AI automatically picks the right methodology and gives you structured, actionable analysis — with entry prices, stop losses, and position sizing.
 
 - No setup required — [open the web app](https://trading-skills-catalog-xbb3.vercel.app/) and start asking
 - Free AI (MiniMax M1) — no API key needed to try
+- Live market data (Yahoo Finance) — real prices, not hallucinated numbers
 - Works in English and Chinese
+- All 43 skills included in this repo — fully self-contained
 
 ## 架构
 
@@ -48,7 +50,7 @@ Traders need many different analysis methods — CANSLIM for growth screening, V
           ▼                        ▼
 ┌──────────────────┐    ┌──────────────────────────┐
 │  Vercel Serverless│    │  System Prompt (SKILL.md) │
-│  /api/chat.js    │    │  44 个交易方法论           │
+│  /api/chat.js    │    │  43 trading methodologies           │
 │  /api/config.js  │    │  Intent Routing 表        │
 └────────┬─────────┘    │  输出格式规范              │
          │              └──────────────────────────┘
@@ -84,13 +86,11 @@ MINIMAX_API_KEY=your_key python3 app/server.py
 ### Claude Code 用户
 
 ```bash
-# 安装 44 个 trading skills + unified hub
-git clone https://github.com/tradermonty/claude-trading-skills.git
-cd claude-trading-skills && ./install.sh
-cd .. && git clone https://github.com/zinan92/trading-copilot.git
+# All 43 skills are included — no external repo needed
+git clone https://github.com/zinan92/trading-copilot.git
 cd trading-copilot && ./install.sh
 
-# 在 Claude Code 中使用
+# Use in Claude Code
 /trading-hub
 ```
 
@@ -98,28 +98,30 @@ cd trading-copilot && ./install.sh
 
 | 功能 | 说明 | 状态 |
 |------|------|------|
-| Trading Copilot Chat | 网页端 AI 交易助手，自动选择分析方法论 | ✅ |
-| 44 个交易方法论 | CANSLIM、VCP、Druckenmiller、Buffett 等专业框架 | ✅ |
-| 流式 Markdown 渲染 | 表格、标题、粗体实时渲染 | ✅ |
-| 用户 Profile | 交易风格/市场/风险偏好，个性化分析 | ✅ |
-| 双 AI Provider | MiniMax（免费）+ Anthropic Claude（BYOK） | ✅ |
-| 对话持久化 | 聊天记录 localStorage 保存，刷新不丢 | ✅ |
-| Skill Catalog 展示页 | 44 个 skill 分类展示 + 工作流全景图 | ✅ |
-| Trading Hub Skill | Claude Code `/trading-hub` 统一入口 | ✅ |
-| 5 个 A 股 Skills | 调用本地 quant-data-pipeline API | ✅ |
-| 自定义工作流 | YAML 保存/加载自定义 skill 序列 | ✅ |
-| Vercel 部署 | 免费云端，任何设备可访问 | ✅ |
+| Trading Copilot Chat | Web AI trading assistant with auto methodology routing | ✅ |
+| 43 Trading Methodologies | CANSLIM, VCP, Druckenmiller, Buffett, O'Neil + more | ✅ |
+| Live Market Data | Real-time prices via Yahoo Finance (indexes + stocks) | ✅ |
+| Streaming Markdown | Tables, headers, bold rendered in real-time | ✅ |
+| Thinking UI | Cursor-style progress (Fetching → Analyzing → Generating) | ✅ |
+| User Profile | Trading style/market/risk preferences for personalized analysis | ✅ |
+| Dual AI Provider | MiniMax (free) + Anthropic Claude (BYOK) | ✅ |
+| Chat Persistence | History saved in localStorage, survives refresh | ✅ |
+| Demo Showcase | Pre-generated NVDA analysis, zero API key needed | ✅ |
+| 43 Skills in Repo | Fully self-contained, no external dependencies | ✅ |
+| Vercel Deployment | Free cloud hosting, accessible from any device | ✅ |
 
 ## 内置方法论
 
 | 分类 | 数量 | 核心方法 |
 |------|------|---------|
-| 宏观 & Regime | 5 | 宏观体制检测、流动性监控、情绪分析、泡沫检测 |
-| 市场择时 | 5 | 广度分析、顶部检测(O'Neil)、底部确认(FTD) |
-| 选股筛选 | 10 | CANSLIM、VCP(Minervini)、价值股息、PEAD、配对交易 |
-| 个股分析 | 9 | 综合研究、价值投资(Buffett)、财报深度、8阶段尽调 |
-| 策略执行 | 10 | Druckenmiller 合成器、仓位计算(Kelly)、期权策略、回测 |
-| A 股分析 | 5 | 日度复盘、概念追踪、信号扫描、条件选股、自选股简报 |
+| Macro & Regime | 5 | macro-regime-detector, macro-liquidity, us-market-sentiment, us-market-bubble-detector, market-environment-analysis |
+| Market Timing | 6 | market-breadth-analyzer, breadth-chart-analyst, market-top-detector, ftd-detector, uptrend-analyzer, market-news-analyst |
+| Stock Screening | 8 | canslim-screener, vcp-screener, pead-screener, dividend-growth-pullback-screener, value-dividend-screener, finviz-screener, theme-detector, institutional-flow-tracker |
+| Stock Analysis | 5 | us-stock-analysis, us-value-investing, tech-earnings-deepdive, technical-analyst, btc-bottom-model |
+| Strategy & Execution | 8 | stanley-druckenmiller-investment, position-sizer, options-strategy-advisor, backtest-expert, risk-management, pair-trade-screener, scenario-analyzer, trade-hypothesis-ideator |
+| Earnings | 3 | earnings-calendar, earnings-trade-analyzer, economic-calendar-fetcher |
+| Portfolio | 2 | portfolio-manager, sector-analyst |
+| A-Share | 6 | ashare-daily-review, ashare-concept-tracker, ashare-signal-scanner, ashare-stock-screener, ashare-watchlist-briefing, trading-hub |
 
 ## 预设工作流
 
@@ -147,26 +149,26 @@ cd trading-copilot && ./install.sh
 
 ```
 trading-copilot/
-├── app/                          # Trading Copilot (产品)
-│   ├── index.html                # Chat 终端 UI
-│   ├── server.py                 # FastAPI 本地代理
-│   └── prompts/
-│       └── SKILL.md              # 44 个方法论 System Prompt
+├── app/                          # Trading Copilot (web app)
+│   ├── index.html                # Chat terminal UI
+│   ├── server.py                 # FastAPI local server (with data prefetch)
+│   └── prompts/SKILL.md          # System prompt with all methodologies
 ├── api/                          # Vercel Serverless Functions
-│   ├── chat.js                   # AI 对话代理 (MiniMax/Anthropic)
-│   └── config.js                 # 配置端点
-├── skills/                       # Claude Code Skills (6 个本地)
-│   ├── trading-hub/SKILL.md      # 统一入口
-│   ├── ashare-daily-review/      # A 股日度复盘
-│   ├── ashare-concept-tracker/   # 概念板块追踪
-│   ├── ashare-signal-scanner/    # 信号扫描
-│   ├── ashare-stock-screener/    # 条件选股
-│   └── ashare-watchlist-briefing/# 自选股简报
-├── agents/AGENTS.md              # Agent Trading Knowledge
-├── catalog.html                  # Skill Catalog 展示页
-├── .claude-plugin/plugin.json    # Claude Code Plugin
-├── vercel.json                   # Vercel 部署配置
-├── install.sh                    # 安装脚本
+│   ├── chat.js                   # AI proxy (MiniMax/Anthropic) + Yahoo Finance data
+│   └── config.js                 # Config endpoint
+├── skills/                       # All 43 trading methodology skills
+│   ├── canslim-screener/         # O'Neil CANSLIM growth screening
+│   ├── vcp-screener/             # Minervini VCP breakout patterns
+│   ├── stanley-druckenmiller-investment/  # Strategy synthesis (0-100 conviction)
+│   ├── tech-earnings-deepdive/   # 16-module earnings analysis
+│   ├── market-top-detector/      # O'Neil distribution day detection
+│   ├── ftd-detector/             # Follow-through day confirmation
+│   ├── ... (43 skills total)     # See full list in "Built-in Methodologies"
+│   └── trading-hub/              # Unified entry point for Claude Code
+├── docs/screenshots/             # Product screenshots
+├── catalog.html                  # Skill catalog display page
+├── vercel.json                   # Vercel deployment config
+├── install.sh                    # Claude Code skill installer
 └── LICENSE                       # MIT
 ```
 
@@ -188,7 +190,7 @@ trading-copilot/
 
 ```yaml
 name: trading-copilot
-description: AI trading analysis terminal with 44 professional methodologies and auto-routing
+description: AI trading analysis terminal with 43 professional methodologies and auto-routing
 version: 1.0.0
 type: web-app + claude-code-skill-collection
 
