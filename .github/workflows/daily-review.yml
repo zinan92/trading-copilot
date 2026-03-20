@@ -67,7 +67,15 @@ jobs:
           TITLE="Morning Review — $DATE"
 
           REPO_ID=$(gh api "repos/$REPO" --jq .node_id)
-          CAT_ID=$(gh api "repos/$REPO/discussions/categories" --jq '.[0].node_id // empty' 2>/dev/null || echo "")
+          CAT_ID=$(gh api graphql -f query='
+            query($owner: String!, $name: String!) {
+              repository(owner: $owner, name: $name) {
+                discussionCategories(first: 1) {
+                  nodes { id }
+                }
+              }
+            }
+          ' -f owner="${REPO%/*}" -f name="${REPO#*/}" --jq '.data.repository.discussionCategories.nodes[0].id // empty' 2>/dev/null || echo "")
 
           if [ -z "$CAT_ID" ]; then
             echo "Discussions not enabled or no categories found. Printing review to log instead:"
