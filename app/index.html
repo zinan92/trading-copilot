@@ -196,56 +196,38 @@
     }
     @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
 
-    /* ── Thinking state (Cursor-style) ── */
-    .thinking-block {
+    /* ── Tool chain (real SSE status steps) ── */
+    .tool-chain {
       align-self: flex-start;
       background: var(--assistant-bg);
       border-radius: 14px;
       border-bottom-left-radius: 4px;
-      padding: 0.7rem 1rem;
+      padding: 0.6rem 0.9rem;
       max-width: 90%;
-      font-size: 0.85rem;
-      color: var(--text-dim);
+      font-size: 0.8rem;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.3rem;
     }
-    .thinking-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 500;
+    .tool-step {
+      display: flex; align-items: center; gap: 0.5rem;
       color: var(--text-dim);
+      opacity: 0; animation: fadeInStep 0.2s ease forwards;
     }
-    .thinking-spinner {
-      width: 14px; height: 14px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    .tool-step .step-icon { width: 16px; text-align: center; font-size: 0.75rem; }
+    .tool-step.running .step-icon { color: var(--accent); }
+    .tool-step.done .step-icon { color: var(--green); }
+    .tool-step.done .step-label { color: var(--text); font-weight: 500; }
+    .tool-spinner {
+      width: 12px; height: 12px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      display: inline-block;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .thinking-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      padding-left: 1.4rem;
-      font-size: 0.8rem;
-    }
-    .thinking-step {
-      color: var(--text-dim);
-      opacity: 0;
-      animation: fadeInStep 0.3s ease forwards;
-    }
-    .thinking-step.done { color: var(--green); }
-    .thinking-step.active { color: var(--accent); }
     @keyframes fadeInStep { to { opacity: 1; } }
-    .thinking-block.collapsing {
-      animation: collapseThinking 0.3s ease forwards;
-    }
-    @keyframes collapseThinking {
-      to { opacity: 0; max-height: 0; padding: 0; margin: 0; overflow: hidden; }
-    }
+    .tool-chain.collapsing { animation: collapseThinking 0.3s ease forwards; }
+    @keyframes collapseThinking { to { opacity: 0; max-height: 0; padding: 0; margin: 0; overflow: hidden; } }
 
     /* Markdown in assistant */
     .msg.assistant h1, .msg.assistant h2, .msg.assistant h3 {
@@ -287,8 +269,6 @@
       font-size: 0.88rem;
     }
     .msg.assistant a { color: var(--accent); }
-
-    /* (thinking-block styles are above) */
 
     /* Copy button */
     .copy-btn {
@@ -577,7 +557,8 @@
         chatSend.disabled = true;
         state.streaming = true;
 
-        addThinking();
+        initToolChain();
+        handleStatus({ step: 'connect', label: 'Connecting...', state: 'running' });
         chatInput.focus();
 
         fetch('/api/chat', {
@@ -619,9 +600,11 @@
                 if (!line.startsWith('data: ')) return;
                 try {
                   var data = JSON.parse(line.slice(6));
-                  if (data.type === 'text') {
+                  if (data.type === 'status') {
+                    handleStatus(data);
+                  } else if (data.type === 'text') {
                     if (!state.currentMsg) {
-                      removeThinking();
+                      collapseToolChain();
                       state.currentMsg = addMsg('assistant', '');
                       state.currentMsg.classList.add('streaming');
                     }
@@ -631,7 +614,7 @@
                     if (renderTimer) { clearTimeout(renderTimer); }
                     finish(fullText);
                   } else if (data.type === 'error') {
-                    removeThinking();
+                    collapseToolChain();
                     if (!state.currentMsg) state.currentMsg = addMsg('assistant', '');
                     state.currentMsg.textContent = parseError(data.error);
                     finish('');
@@ -640,7 +623,7 @@
               });
               read();
             }).catch(function(err) {
-              removeThinking();
+              collapseToolChain();
               if (!state.currentMsg) state.currentMsg = addMsg('assistant', '');
               state.currentMsg.textContent = parseError(err.message);
               finish('');
@@ -648,7 +631,7 @@
           }
           read();
         }).catch(function(err) {
-          removeThinking();
+          collapseToolChain();
           if (!state.currentMsg) state.currentMsg = addMsg('assistant', '');
           state.currentMsg.textContent = parseError(err.message);
           finish('');
@@ -695,68 +678,58 @@
         return div;
       }
 
-      var thinkingSteps = [
-        { text: 'Fetching live market data...', delay: 0 },
-        { text: 'Selecting analysis methodology...', delay: 1500 },
-        { text: 'Generating structured analysis...', delay: 4000 }
-      ];
-      var thinkingTimer = null;
-      var thinkingIndex = 0;
+      var toolChainEl = null;
 
-      function addThinking() {
-        var block = document.createElement('div');
-        block.className = 'thinking-block';
-        block.id = 'thinkingBlock';
-
-        var header = document.createElement('div');
-        header.className = 'thinking-header';
-        var spinner = document.createElement('div');
-        spinner.className = 'thinking-spinner';
-        var label = document.createElement('span');
-        label.textContent = 'Thinking...';
-        header.appendChild(spinner);
-        header.appendChild(label);
-        block.appendChild(header);
-
-        var steps = document.createElement('div');
-        steps.className = 'thinking-steps';
-        steps.id = 'thinkingSteps';
-        block.appendChild(steps);
-
-        // Add first step immediately
-        addThinkingStep(steps, thinkingSteps[0].text, true);
-        messagesEl.appendChild(block);
+      function initToolChain() {
+        toolChainEl = document.createElement('div');
+        toolChainEl.className = 'tool-chain';
+        toolChainEl.id = 'toolChain';
+        messagesEl.appendChild(toolChainEl);
         messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
 
-        thinkingIndex = 1;
-        thinkingTimer = setInterval(function() {
-          if (thinkingIndex < thinkingSteps.length) {
-            // Mark previous as done
-            var prev = steps.children[thinkingIndex - 1];
-            if (prev) { prev.classList.remove('active'); prev.classList.add('done'); prev.textContent = '\u2713 ' + prev.textContent.replace(/^[\u2713\u25CB]\s*/, ''); }
-            addThinkingStep(steps, thinkingSteps[thinkingIndex].text, true);
-            thinkingIndex++;
-            messagesEl.scrollTop = messagesEl.scrollHeight;
+      function handleStatus(data) {
+        if (!toolChainEl) initToolChain();
+        var existing = toolChainEl.querySelector('[data-step="' + data.step + '"]');
+        if (existing) {
+          existing.className = 'tool-step ' + data.state;
+          var iconEl = existing.querySelector('.step-icon');
+          if (data.state === 'running') {
+            iconEl.textContent = '';
+            var sp = document.createElement('span');
+            sp.className = 'tool-spinner';
+            iconEl.appendChild(sp);
           } else {
-            clearInterval(thinkingTimer);
-            thinkingTimer = null;
+            iconEl.textContent = '\u2713';
           }
-        }, 2000);
+          existing.querySelector('.step-label').textContent = data.label;
+        } else {
+          var step = document.createElement('div');
+          step.className = 'tool-step ' + data.state;
+          step.setAttribute('data-step', data.step);
+          var icon = document.createElement('span');
+          icon.className = 'step-icon';
+          if (data.state === 'running') {
+            var sp = document.createElement('span');
+            sp.className = 'tool-spinner';
+            icon.appendChild(sp);
+          } else {
+            icon.textContent = '\u2713';
+          }
+          var label = document.createElement('span');
+          label.className = 'step-label';
+          label.textContent = data.label;
+          step.appendChild(icon);
+          step.appendChild(label);
+          toolChainEl.appendChild(step);
+        }
+        messagesEl.scrollTop = messagesEl.scrollHeight;
       }
 
-      function addThinkingStep(container, text, active) {
-        var step = document.createElement('div');
-        step.className = 'thinking-step' + (active ? ' active' : '');
-        step.textContent = '\u25CB ' + text;
-        container.appendChild(step);
-      }
-
-      function removeThinking() {
-        if (thinkingTimer) { clearInterval(thinkingTimer); thinkingTimer = null; }
-        var el = document.getElementById('thinkingBlock');
-        if (el) {
-          el.classList.add('collapsing');
-          setTimeout(function() { if (el.parentNode) el.remove(); }, 300);
+      function collapseToolChain() {
+        if (toolChainEl) {
+          toolChainEl.classList.add('collapsing');
+          setTimeout(function() { if (toolChainEl && toolChainEl.parentNode) toolChainEl.remove(); toolChainEl = null; }, 300);
         }
       }
 
