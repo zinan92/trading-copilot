@@ -2,29 +2,35 @@
 
 # Trading Copilot
 
-**告诉 AI 你的交易想法，它自动选择最合适的分析方法，给你可执行的建议**
+**44 professional trading methodologies. One AI that picks the right one for your question.**
 
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Skills](https://img.shields.io/badge/methods-44-blue.svg)](https://trading-skills-catalog-xbb3.vercel.app/catalog)
-[![MiniMax](https://img.shields.io/badge/AI-MiniMax_M1-10B981.svg)](https://www.minimax.io/)
+[![Methods](https://img.shields.io/badge/methodologies-44-blue.svg)](https://trading-skills-catalog-xbb3.vercel.app/catalog)
+[![Try It](https://img.shields.io/badge/Try_It-Live_Demo-2563EB.svg)](https://trading-skills-catalog-xbb3.vercel.app/)
 
-[Try It](https://trading-skills-catalog-xbb3.vercel.app/) · [Skill Catalog](https://trading-skills-catalog-xbb3.vercel.app/catalog) · [GitHub](https://github.com/zinan92/trading-skills-catalog)
+[**Try It Now**](https://trading-skills-catalog-xbb3.vercel.app/) · [Skill Catalog](https://trading-skills-catalog-xbb3.vercel.app/catalog)
 
 </div>
 
+<p align="center">
+  <img src="docs/screenshots/landing.png" width="700" alt="Trading Copilot Landing Page" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/analysis.png" width="700" alt="NVDA Analysis Example" />
+</p>
+
 ---
 
-## 痛点
+## What is this?
 
-交易者需要做大量分析 — 宏观研判、选股筛选、财报解读、仓位计算 — 每种分析都有专业方法论（CANSLIM、VCP、Druckenmiller 策略合成等）。但普通交易者记不住这些方法论，更不知道什么场景该用哪个。
+Traders need many different analysis methods — CANSLIM for growth screening, VCP for breakout patterns, Druckenmiller for strategy synthesis, O'Neil for market timing. But remembering 44 methodologies and knowing which one to use when is hard.
 
-## 解决方案
+**Trading Copilot solves this.** Describe your trading idea in plain language (English or Chinese). The AI automatically picks the right methodology and gives you structured, actionable analysis — with entry prices, stop losses, and position sizing.
 
-Trading Copilot 把 44 个专业交易分析方法论封装进一个 AI system prompt。你只需要用自然语言说交易想法，AI 自动选择正确的方法论并给出结构化分析。
-
-- 不需要知道任何 skill 名称
-- 不需要安装任何东西
-- 打开网页，输入交易想法，得到专业分析
+- No setup required — [open the web app](https://trading-skills-catalog-xbb3.vercel.app/) and start asking
+- Free AI (MiniMax M1) — no API key needed to try
+- Works in English and Chinese
 
 ## 架构
 
@@ -63,8 +69,8 @@ Trading Copilot 把 44 个专业交易分析方法论封装进一个 AI system p
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/zinan92/trading-skills-catalog.git
-cd trading-skills-catalog
+git clone https://github.com/zinan92/trading-copilot.git
+cd trading-copilot
 
 # 2. 安装依赖
 pip install fastapi uvicorn httpx
@@ -81,8 +87,8 @@ MINIMAX_API_KEY=your_key python3 app/server.py
 # 安装 44 个 trading skills + unified hub
 git clone https://github.com/tradermonty/claude-trading-skills.git
 cd claude-trading-skills && ./install.sh
-cd .. && git clone https://github.com/zinan92/trading-skills-catalog.git
-cd trading-skills-catalog && ./install.sh
+cd .. && git clone https://github.com/zinan92/trading-copilot.git
+cd trading-copilot && ./install.sh
 
 # 在 Claude Code 中使用
 /trading-hub
@@ -140,7 +146,7 @@ cd trading-skills-catalog && ./install.sh
 ## 项目结构
 
 ```
-trading-skills-catalog/
+trading-copilot/
 ├── app/                          # Trading Copilot (产品)
 │   ├── index.html                # Chat 终端 UI
 │   ├── server.py                 # FastAPI 本地代理
