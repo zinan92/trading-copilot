@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Trading Copilot</title>
+  <title>Trading Copilot — AI Trading Analysis</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563EB'/><text y='72' x='15' font-size='60' font-weight='bold' fill='white'>TC</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.5/dist/purify.min.js"></script>
@@ -333,17 +334,22 @@
     .btn-secondary { background: var(--bg); color: var(--text-dim); border: 1px solid var(--border) !important; }
     .btn-danger { background: var(--red); color: white; }
 
-    /* ── Demo link ── */
-    .demo-link {
-      margin-top: 1.5rem;
-      background: none; border: none;
-      color: var(--text-dim); font-size: 0.82rem;
+    /* ── Demo button ── */
+    .demo-btn {
+      margin-bottom: 1.8rem;
+      padding: 0.55rem 1.4rem;
+      border: 1px solid var(--accent);
+      border-radius: 24px;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 0.85rem; font-weight: 500;
       cursor: pointer; font-family: var(--font);
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      transition: color 0.15s;
+      transition: all 0.15s;
     }
-    .demo-link:hover { color: var(--accent); }
+    .demo-btn:hover {
+      background: var(--accent); color: white;
+      transform: translateY(-1px);
+    }
 
     @media (max-width: 640px) {
       .landing h1 { font-size: 1.8rem; }
@@ -371,26 +377,26 @@
     <!-- Landing page (centered input) -->
     <div class="landing" id="landing">
       <h1>Your <span>Trading Copilot</span></h1>
-      <p class="subtitle">Tell me your trading idea. I'll pick the right analysis method and give you actionable insights.</p>
+      <p class="subtitle">44 professional methodologies — CANSLIM, VCP, Druckenmiller, O'Neil — one AI that picks the right one for your question.</p>
+
+      <button class="demo-btn" id="showDemo">See a real analysis example</button>
 
       <div class="landing-input">
-        <textarea id="landingInput" placeholder="Describe your trading idea..." rows="2"></textarea>
+        <textarea id="landingInput" placeholder="e.g. NVDA 值不值得买? / Is TSLA a buy? / 今天市场怎么样?" rows="2"></textarea>
         <div class="landing-input-footer">
           <button class="send-btn" id="landingSend" disabled>&#8593;</button>
         </div>
       </div>
 
       <div class="quick-actions">
-        <div class="quick-label">Try one of these</div>
-        <button class="quick-btn" data-prompt="今天市场有什么重要的事情？帮我做一个快速复盘。">📊 Today's Market</button>
-        <button class="quick-btn" data-prompt="根据当前市场环境，帮我找几只值得关注的股票。先问我偏好什么风格。">🔍 Stock Screener</button>
-        <button class="quick-btn" data-prompt="给我一个综合策略建议：当前市场环境怎么样？确信度评分是多少？">🎯 Strategy</button>
+        <div class="quick-label">Or try one of these</div>
+        <button class="quick-btn" data-prompt="帮我分析一下 NVDA 值不值得买入">📈 NVDA Deep Dive</button>
+        <button class="quick-btn" data-prompt="给我一个综合策略建议：当前市场环境怎么样？确信度评分是多少？">🎯 Druckenmiller Conviction</button>
+        <button class="quick-btn" data-prompt="今天市场有什么重要的事情？帮我做一个快速复盘。">📊 Market Review</button>
+        <button class="quick-btn" data-prompt="根据当前市场环境，帮我找几只值得关注的股票。用 CANSLIM 方法筛选。">🔍 CANSLIM Screen</button>
         <button class="quick-btn" data-prompt="请做一次完整的 A 股复盘：涨停板分析、板块强弱、轮动信号。">🇨🇳 A-Share Review</button>
-        <button class="quick-btn" data-prompt="帮我分析一下 NVDA 值不值得买入">📈 Analyze NVDA</button>
-        <button class="quick-btn" data-prompt="本周有哪些重要公司发布财报？">📅 Earnings</button>
+        <button class="quick-btn" data-prompt="本周有哪些重要公司发布财报？帮我做个财报前瞻。">📅 Earnings Preview</button>
       </div>
-
-      <button class="demo-link" id="showDemo">See an example analysis &rarr;</button>
     </div>
 
     <!-- Chat view (after first message) -->
