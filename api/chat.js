@@ -57,7 +57,8 @@ async function streamMinimax(system, messages, apiKey, res) {
     model: 'MiniMax-M1',
     messages: fullMessages,
     stream: true,
-    max_tokens: 4096
+    max_tokens: 4096,
+    tools: []
   });
 
   // Use Node.js https module instead of fetch for reliable streaming on Vercel
@@ -248,7 +249,7 @@ function extractUSTickers(msg) {
 }
 
 function isAShareQuery(msg) {
-  return /[A股a股沪深创业板涨停跌停板块概念茅台宁德]/.test(msg);
+  return /A股|a股|沪深|创业板|涨停|跌停|板块|概念|茅台|宁德|上证|深证|科创板|港股通/.test(msg);
 }
 
 async function fetchMarketContext(message) {

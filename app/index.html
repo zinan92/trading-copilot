@@ -190,16 +190,10 @@
       align-self: center; background: var(--gold-light); color: var(--gold);
       font-size: 0.8rem; text-align: center; padding: 0.4rem 1rem; border-radius: 8px;
     }
-    .msg.thinking {
-      align-self: flex-start; background: var(--assistant-bg); color: var(--text-dim);
-      border-bottom-left-radius: 4px; font-size: 0.88rem;
-    }
     .msg.assistant.streaming::after {
       content: '\u2588'; animation: blink 0.8s infinite; color: var(--accent);
     }
     @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
-    .thinking-dots::after { content: ''; animation: dots 1.4s infinite; }
-    @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
 
     /* Markdown in assistant */
     .msg.assistant h1, .msg.assistant h2, .msg.assistant h3 {
@@ -234,25 +228,45 @@
     .msg.assistant tr:hover td { background: rgba(37,99,235,0.02); }
     .msg.assistant hr { border: none; border-top: 1px solid var(--border); margin: 0.8rem 0; }
     .msg.assistant blockquote {
-      border-left: 3px solid var(--accent);
-      background: linear-gradient(135deg, rgba(37,99,235,0.04), rgba(37,99,235,0.01));
-      padding: 0.7rem 1rem;
-      border-radius: 0 10px 10px 0;
-      margin: 0.6rem 0;
-      color: var(--text);
+      border-left: 3px solid var(--border);
+      padding: 0.5rem 0.8rem;
+      margin: 0.4rem 0;
+      color: var(--text-dim);
       font-size: 0.88rem;
     }
-    .msg.assistant blockquote + blockquote {
-      margin-top: 0.4rem;
-    }
-    .msg.assistant blockquote strong {
-      color: var(--accent);
-      font-size: 0.9rem;
-    }
-    .msg.assistant blockquote p {
-      margin: 0.2rem 0;
-    }
     .msg.assistant a { color: var(--accent); }
+
+    /* ── Status indicator (Perplexity-style) ── */
+    .status-bar {
+      align-self: flex-start;
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--accent-light);
+      border-radius: 10px;
+      font-size: 0.82rem;
+      color: var(--accent);
+      animation: statusPulse 2s ease-in-out infinite;
+    }
+    .status-bar .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: dotBlink 1s ease-in-out infinite;
+    }
+    @keyframes statusPulse {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; }
+    }
+    @keyframes dotBlink {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+    .status-bar.done {
+      animation: statusFadeOut 0.4s ease forwards;
+    }
+    @keyframes statusFadeOut {
+      to { opacity: 0; height: 0; padding: 0; margin: 0; overflow: hidden; }
+    }
 
     /* Copy button */
     .copy-btn {
@@ -586,7 +600,12 @@
       function addMsg(role, text) {
         var div = document.createElement('div');
         div.className = 'msg ' + role;
-        div.textContent = text;
+
+        // Content goes in a dedicated container so renderMarkdown won't destroy controls
+        var content = document.createElement('div');
+        content.className = 'msg-content';
+        content.textContent = text;
+        div.appendChild(content);
 
         if (role === 'user' || role === 'assistant') {
           var time = document.createElement('div');
@@ -602,7 +621,8 @@
           copyBtn.textContent = 'Copy';
           copyBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            navigator.clipboard.writeText(div.innerText.replace(/^Copy/, '').trim()).then(function() {
+            var raw = div.querySelector('.msg-content').innerText;
+            navigator.clipboard.writeText(raw.trim()).then(function() {
               copyBtn.textContent = 'Copied!';
               copyBtn.classList.add('copied');
               setTimeout(function() { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1500);
@@ -616,21 +636,43 @@
         return div;
       }
 
+      var statusSteps = ['Fetching market data...', 'Analyzing...', 'Generating insights...'];
+      var statusTimer = null;
+      var statusIndex = 0;
+
       function addThinking() {
         var div = document.createElement('div');
-        div.className = 'msg thinking';
-        div.id = 'thinkingIndicator';
-        var span = document.createElement('span');
-        span.className = 'thinking-dots';
-        span.textContent = '\u2728 Analyzing';
-        div.appendChild(span);
+        div.className = 'status-bar';
+        div.id = 'statusIndicator';
+        var dot = document.createElement('span');
+        dot.className = 'status-dot';
+        var txt = document.createElement('span');
+        txt.className = 'status-text';
+        txt.textContent = statusSteps[0];
+        div.appendChild(dot);
+        div.appendChild(txt);
         messagesEl.appendChild(div);
         messagesEl.scrollTop = messagesEl.scrollHeight;
+        statusIndex = 1;
+        statusTimer = setInterval(function() {
+          if (statusIndex < statusSteps.length) {
+            var el = document.getElementById('statusIndicator');
+            if (el) el.querySelector('.status-text').textContent = statusSteps[statusIndex];
+            statusIndex++;
+          } else {
+            clearInterval(statusTimer);
+            statusTimer = null;
+          }
+        }, 2500);
       }
 
       function removeThinking() {
-        var el = document.getElementById('thinkingIndicator');
-        if (el) el.remove();
+        if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
+        var el = document.getElementById('statusIndicator');
+        if (el) {
+          el.classList.add('done');
+          setTimeout(function() { if (el.parentNode) el.remove(); }, 400);
+        }
       }
 
       function autoScroll() {
@@ -653,14 +695,16 @@
       }
 
       function renderMarkdown(el, text) {
+        var target = el.querySelector('.msg-content') || el;
         if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
-          el.innerHTML = DOMPurify.sanitize(marked.parse(text));
+          target.innerHTML = DOMPurify.sanitize(marked.parse(text));
         } else {
-          el.textContent = text;
+          target.textContent = text;
         }
       }
 
       function finish(fullText) {
+        if (!state.streaming) return; // guard against double-call
         if (state.currentMsg) {
           state.currentMsg.classList.remove('streaming');
           if (fullText) { renderMarkdown(state.currentMsg, fullText); autoScroll(); }
