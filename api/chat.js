@@ -27,14 +27,20 @@ export default async function handler(req, res) {
 
   try {
     if (provider === 'anthropic') {
-      await streamAnthropic(system, messages, api_key || process.env.ANTHROPIC_API_KEY, res);
+      await streamAnthropic(system, messages, (api_key || process.env.ANTHROPIC_API_KEY || '').trim(), res);
     } else {
-      await streamMinimax(system, messages, api_key || process.env.MINIMAX_API_KEY, res);
+      await streamMinimax(system, messages, (api_key || process.env.MINIMAX_API_KEY || '').trim(), res);
     }
   } catch (e) {
-    res.write('data: ' + JSON.stringify({ type: 'error', error: e.message }) + '\n\n');
+    res.write('data: ' + JSON.stringify({ type: 'error', error: sanitizeError(e.message) }) + '\n\n');
     res.end();
   }
+}
+
+function sanitizeError(msg) {
+  // Never expose API keys in error messages
+  return msg.replace(/sk-[a-zA-Z0-9_-]+/g, 'sk-***').replace(/Bearer [^\s"]+/g, 'Bearer ***');
+}
 }
 
 async function streamMinimax(system, messages, apiKey, res) {
