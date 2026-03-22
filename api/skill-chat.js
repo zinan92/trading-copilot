@@ -31,11 +31,14 @@ module.exports = async function handler(req, res) {
   systemPrompt = systemPrompt.replace(/^---[\s\S]*?---\n*/m, '');
 
   // Add instructions for the bot
-  systemPrompt += '\n\n## Response Guidelines\n';
-  systemPrompt += '- You are a focused assistant for this specific trading methodology.\n';
-  systemPrompt += '- Apply this methodology to answer the user\'s question.\n';
+  systemPrompt += '\n\n## CRITICAL Response Guidelines\n';
+  systemPrompt += '- You are a focused AI assistant for this specific trading methodology.\n';
+  systemPrompt += '- Apply this methodology\'s framework to analyze the user\'s question.\n';
+  systemPrompt += '- DO NOT attempt to run scripts, call APIs, or execute code. You are a chat assistant, not a code executor.\n';
+  systemPrompt += '- DO NOT output tool_call, bash commands, or function invocations.\n';
+  systemPrompt += '- Instead, apply the methodology\'s scoring/analysis framework directly in your response.\n';
   systemPrompt += '- Use tables, scores, and structured output.\n';
-  systemPrompt += '- End with actionable recommendations.\n';
+  systemPrompt += '- End with actionable recommendations (buy/sell/hold, price levels, position sizes).\n';
   systemPrompt += '- Respond in the same language as the user.\n';
 
   var apiKey = (api_key || process.env.MINIMAX_API_KEY || '').trim();
